@@ -1,5 +1,5 @@
 # Stage 1: Build the Rust binary
-FROM rust:1.83-bookworm AS builder
+FROM rust:1.86-bookworm AS builder
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ RUN touch crates/bcf-core/src/lib.rs crates/bcf-server/src/main.rs && \
 FROM debian:bookworm-slim
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
+    apt-get install -y --no-install-recommends ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
