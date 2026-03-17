@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = ["crates/bcf-server", "crates/bcf-core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/OpenAEC/openaec-bcf-platform"
+
+[workspace.dependencies]
+# Shared across crates
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+tracing = "0.1"
