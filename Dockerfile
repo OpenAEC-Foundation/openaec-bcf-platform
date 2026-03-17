@@ -1,6 +1,9 @@
 # Stage 1: Build the Rust binary
 FROM rust:latest AS builder
 
+# Limit parallelism to reduce memory usage on small servers
+ENV CARGO_BUILD_JOBS=1
+
 WORKDIR /app
 
 # Copy manifests first for dependency caching
