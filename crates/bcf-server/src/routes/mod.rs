@@ -4,10 +4,12 @@ use axum::Router;
 
 use crate::state::AppState;
 
+pub mod bcfio;
 pub mod comments;
 pub mod health;
 pub mod projects;
 pub mod topics;
+pub mod viewpoints;
 
 /// Build the complete API router with all BCF v2.1 and platform routes.
 pub fn api_router() -> Router<AppState> {
@@ -27,4 +29,5 @@ fn bcf_routes() -> Router<AppState> {
 fn platform_routes() -> Router<AppState> {
   Router::new()
     .nest("/projects", projects::platform_project_routes())
+    .nest("/projects", bcfio::routes())
 }

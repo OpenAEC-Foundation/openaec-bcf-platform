@@ -4,9 +4,10 @@
 //! Handles .bcfzip files, markup.bcf XML, and viewpoint.bcfv XML.
 //! No web framework dependencies — pure data types and file operations.
 
+pub mod error;
 pub mod types;
+pub mod xml_types;
 
-// Stubs for Fase 3 implementation
-// pub mod bcfzip;
-// pub mod markup;
-// pub mod visinfo;
+pub mod bcfzip;
+pub mod markup;
+pub mod visinfo;

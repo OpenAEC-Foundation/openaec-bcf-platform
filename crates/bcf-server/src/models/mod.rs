@@ -3,3 +3,4 @@
 pub mod comment;
 pub mod project;
 pub mod topic;
+pub mod viewpoint;

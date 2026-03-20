@@ -3,12 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: bcf-server
     restart: always
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://bcf:${POSTGRES_PASSWORD}@postgres:5432/bcf_platform
+      DATABASE_URL: postgres://bcf:${POSTGRES_PASSWORD}@bcf-postgresql:5432/bcf_platform
       HOST: "0.0.0.0"
       PORT: "3000"
       RUST_LOG: "bcf_server=info,tower_http=info"
@@ -17,9 +18,11 @@ services:
       - snapshot_data:/app/data/snapshots
     networks:
       - bcf-net
+      - openaec_default
 
   postgres:
     image: postgres:16-alpine
+    container_name: bcf-postgresql
     restart: always
     environment:
       POSTGRES_DB: bcf_platform
@@ -35,27 +38,12 @@ services:
     networks:
       - bcf-net
 
-  caddy:
-    image: caddy:2-alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - bcf-server
-    networks:
-      - bcf-net
-
 volumes:
   pgdata:
   snapshot_data:
-  caddy_data:
-  caddy_config:
 
 networks:
   bcf-net:
     driver: bridge
+  openaec_default:
+    external: true

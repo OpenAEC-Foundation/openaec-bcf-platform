@@ -75,6 +75,24 @@ pub async fn get_topic(
   .await
 }
 
+/// Get a single topic by ID (without project scope).
+pub async fn get_topic_by_id(
+  pool: &PgPool,
+  topic_id: Uuid,
+) -> Result<Option<TopicRow>, sqlx::Error> {
+  sqlx::query_as::<_, TopicRow>(
+    "SELECT id, project_id, title, description, topic_type, topic_status,
+            priority, assigned_to, stage, labels, due_date,
+            creation_author, modified_author, index_number,
+            created_at, updated_at
+     FROM topics
+     WHERE id = $1",
+  )
+  .bind(topic_id)
+  .fetch_optional(pool)
+  .await
+}
+
 /// Insert a new topic.
 pub async fn create_topic(
   pool: &PgPool,
