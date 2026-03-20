@@ -58,3 +58,11 @@ sqlx migrate run --source migrations
 - Modules get `//!` header docs
 - Parameter structs over long argument lists
 - Constants for magic values
+
+---
+
+## Orchestrator
+
+Bij sessie START → lees `X:\10_3BM_bouwkunde\50_Claude-Code-Projects\lessons_learned_global.md`
+Bij sessie EINDE → schrijf `C:\Users\JochemK\.claude\orchestrator\sessions\bcf-platform_latest.md`
+**Registry:** `C:\Users\JochemK\.claude\orchestrator\project-registry.json`

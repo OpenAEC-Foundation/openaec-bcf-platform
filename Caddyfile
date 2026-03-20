@@ -1,4 +1,4 @@
-bcf.openaec.org {
+bcf.open-aec.com {
 	reverse_proxy bcf-server:3000
 
 	header {
