@@ -57,7 +57,8 @@ pub async fn create_viewpoint(
   .await
 }
 
-/// Create a viewpoint with a specific ID (used during BCF import).
+/// Create a viewpoint with a specific ID (reserved for future use).
+#[allow(dead_code)]
 pub async fn create_viewpoint_with_id(
   pool: &PgPool,
   id: Uuid,

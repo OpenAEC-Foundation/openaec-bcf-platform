@@ -102,7 +102,7 @@ async fn import_bcf(
       total_comments += 1;
     }
 
-    // Create viewpoints with snapshots
+    // Create viewpoints with snapshots (new UUIDs, not from BCF file)
     for vp in &folder.viewpoints {
       let camera_json = vp
         .camera
@@ -113,27 +113,31 @@ async fn import_bcf(
         .as_ref()
         .and_then(|c| serde_json::to_value(c).ok());
 
-      // Save snapshot if present
-      let snapshot_path = if let Some(ref snap_data) = vp.snapshot_data {
-        let path = state
-          .storage
-          .save(topic_row.id, vp.guid, snap_data)
-          .await
-          .map_err(|e| AppError::Internal(format!("snapshot save failed: {e}")))?;
-        Some(path)
-      } else {
-        None
-      };
-
-      db::viewpoints::create_viewpoint_with_id(
+      let vp_row = db::viewpoints::create_viewpoint(
         &state.pool,
-        vp.guid,
         topic_row.id,
-        snapshot_path.as_deref(),
+        None,
         camera_json.as_ref(),
         components_json.as_ref(),
       )
       .await?;
+
+      // Save snapshot if present, using the new DB-generated ID
+      if let Some(ref snap_data) = vp.snapshot_data {
+        let path = state
+          .storage
+          .save(topic_row.id, vp_row.id, snap_data)
+          .await
+          .map_err(|e| AppError::Internal(format!("snapshot save failed: {e}")))?;
+        db::viewpoints::update_viewpoint(
+          &state.pool,
+          vp_row.id,
+          Some(&path),
+          None,
+          None,
+        )
+        .await?;
+      }
       total_viewpoints += 1;
     }
   }
