@@ -18,7 +18,7 @@ services:
       - snapshot_data:/app/data/snapshots
     networks:
       - bcf-net
-      - openaec_default
+      - openaec_platform
 
   postgres:
     image: postgres:16-alpine
@@ -45,5 +45,5 @@ volumes:
 networks:
   bcf-net:
     driver: bridge
-  openaec_default:
+  openaec_platform:
     external: true
