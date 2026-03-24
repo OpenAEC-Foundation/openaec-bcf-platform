@@ -1,0 +1,204 @@
+.ribbon {
+  display: flex;
+  flex-direction: column;
+  background: var(--theme-bg);
+  user-select: none;
+  border-bottom: 1px solid var(--theme-border-subtle);
+}
+
+/* ── Tab strip ─────────────────────── */
+.ribbon__tabs {
+  display: flex;
+  align-items: stretch;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 4px;
+  gap: 1px;
+}
+
+.ribbon__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Inter", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  border: none;
+  background: transparent;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  border-bottom: 2px solid transparent;
+  position: relative;
+}
+
+.ribbon__tab:hover {
+  color: var(--theme-text);
+  background: var(--theme-hover);
+}
+
+.ribbon__tab--active {
+  color: var(--theme-accent);
+  border-bottom-color: var(--theme-accent);
+}
+
+.ribbon__tab--file {
+  background: var(--theme-file-tab-bg);
+  color: var(--theme-file-tab-text);
+  font-weight: 700;
+  border-radius: 3px 3px 0 0;
+  border-bottom: none;
+  padding: 0 20px;
+}
+
+.ribbon__tab--file:hover {
+  background: var(--theme-file-tab-hover);
+  color: var(--theme-file-tab-text);
+}
+
+/* ── Content panel ─────────────────── */
+.ribbon__content {
+  display: flex;
+  align-items: stretch;
+  height: 94px;
+  min-height: 94px;
+  padding: 4px 8px;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* ── Group ─────────────────────────── */
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+  padding: 0 6px;
+}
+
+.ribbon-group::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 6px;
+  bottom: 18px;
+  width: 1px;
+  background: var(--theme-ribbon-group-separator);
+}
+
+.ribbon-group:last-child::after {
+  display: none;
+}
+
+.ribbon-group__items {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+  padding-top: 2px;
+}
+
+.ribbon-group__label {
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--theme-ribbon-group-label);
+  padding: 2px 0;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Button (large) ────────────────── */
+.ribbon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 5px 8px 3px;
+  min-width: 52px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--theme-text);
+  cursor: pointer;
+  transition: all 0.12s;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.ribbon-btn:hover {
+  background: var(--theme-ribbon-btn-hover);
+  border-color: var(--theme-ribbon-btn-hover-border);
+}
+
+.ribbon-btn:active {
+  background: var(--theme-ribbon-btn-active-bg);
+  border-color: var(--theme-ribbon-btn-active-border);
+}
+
+.ribbon-btn--active {
+  background: var(--theme-ribbon-btn-active-bg);
+  border-color: var(--theme-ribbon-btn-active-border);
+  color: var(--theme-ribbon-btn-active-text);
+}
+
+.ribbon-btn__icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-text-secondary);
+}
+
+.ribbon-btn:hover .ribbon-btn__icon,
+.ribbon-btn--active .ribbon-btn__icon {
+  color: var(--theme-ribbon-icon-active);
+}
+
+.ribbon-btn__label {
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.ribbon-btn:hover .ribbon-btn__label {
+  color: var(--theme-ribbon-text-hover);
+}
+
+/* ── Button Stack (small, vertical pair) ── */
+.ribbon-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 2px;
+}
+
+.ribbon-btn--small {
+  flex-direction: row;
+  min-width: unset;
+  padding: 3px 8px;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.ribbon-btn--small .ribbon-btn__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ribbon-btn--small .ribbon-btn__label {
+  font-size: 11px;
+}
+
+/* ── Disabled state ────────────────── */
+.ribbon-btn--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}

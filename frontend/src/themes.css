@@ -1,0 +1,44 @@
+:root,
+[data-theme="light"] {
+  --theme-bg: #36363E;
+  --theme-bg-lighter: #44444C;
+  --theme-surface: #36363E;
+  --theme-border: rgba(217, 119, 6, 0.25);
+  --theme-border-subtle: rgba(217, 119, 6, 0.15);
+  --theme-text: #FAFAF9;
+  --theme-text-secondary: rgba(250, 250, 249, 0.6);
+  --theme-text-muted: rgba(250, 250, 249, 0.5);
+  --theme-accent: #D97706;
+  --theme-accent-hover: #EA580C;
+  --theme-accent-text: #36363E;
+  --theme-accent-soft: rgba(217, 119, 6, 0.08);
+  --theme-hover: rgba(217, 119, 6, 0.1);
+  --theme-hover-strong: rgba(217, 119, 6, 0.18);
+  --theme-focus-color: #D97706;
+  --theme-danger-color: #f87171;
+  --theme-file-tab-bg: #D97706;
+  --theme-file-tab-hover: #EA580C;
+  --theme-file-tab-text: #36363E;
+  --theme-content-bg: #FAFAF9;
+  --theme-ribbon-btn-hover: rgba(217, 119, 6, 0.15);
+  --theme-ribbon-btn-hover-border: rgba(217, 119, 6, 0.30);
+  --theme-ribbon-btn-active-bg: rgba(217, 119, 6, 0.20);
+  --theme-ribbon-btn-active-border: rgba(217, 119, 6, 0.40);
+  --theme-ribbon-btn-active-text: #D97706;
+  --theme-ribbon-icon-active: #D97706;
+  --theme-ribbon-text-hover: #D97706;
+  --theme-ribbon-group-separator: rgba(250, 250, 249, 0.15);
+  --theme-ribbon-group-label: rgba(217, 119, 6, 0.8);
+  --theme-status-bg: #36363E;
+  --theme-status-border: #27272A;
+  --theme-status-text: #A1A1AA;
+  --theme-status-text-label: rgba(161, 161, 170, 0.7);
+  --theme-status-hover: rgba(250, 250, 249, 0.1);
+  --theme-status-separator: rgba(250, 250, 249, 0.15);
+  --theme-backstage-item-shortcut: rgba(250, 250, 249, 0.5);
+  --theme-backstage-item-shortcut-hover: rgba(217, 119, 6, 0.7);
+  --theme-dialog-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --theme-btn-primary-bg: #D97706;
+  --theme-btn-primary-text: #36363E;
+  --theme-btn-primary-hover-bg: #EA580C;
+}

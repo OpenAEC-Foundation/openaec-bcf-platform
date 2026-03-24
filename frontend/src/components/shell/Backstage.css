@@ -1,0 +1,131 @@
+.backstage {
+  position: fixed;
+  top: 40px; /* AppBar height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  animation: backstage-fade-in 0.15s ease-out;
+}
+
+@keyframes backstage-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.backstage__sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: var(--theme-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  border-right: 1px solid var(--theme-border-subtle);
+}
+
+.backstage__sidebar-header {
+  padding: 12px 20px 16px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--theme-accent);
+  letter-spacing: -0.02em;
+}
+
+.backstage__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Inter", system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+}
+
+.backstage__item:hover {
+  background: var(--theme-hover-strong);
+  color: var(--theme-accent);
+}
+
+.backstage__item--active {
+  background: var(--theme-accent-soft);
+  color: var(--theme-accent);
+  border-right: 3px solid var(--theme-accent);
+}
+
+.backstage__item--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.backstage__item-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-text-secondary);
+}
+
+.backstage__item:hover .backstage__item-icon {
+  color: var(--theme-accent);
+}
+
+.backstage__item-label {
+  flex: 1;
+}
+
+.backstage__item-shortcut {
+  font-size: 11px;
+  color: var(--theme-backstage-item-shortcut);
+}
+
+.backstage__item:hover .backstage__item-shortcut {
+  color: var(--theme-backstage-item-shortcut-hover);
+}
+
+.backstage__separator {
+  height: 1px;
+  margin: 6px 16px;
+  background: var(--theme-ribbon-group-separator);
+}
+
+.backstage__panel {
+  flex: 1;
+  background: var(--theme-content-bg);
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+.backstage__panel-title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #36363E;
+  margin-bottom: 16px;
+}
+
+.backstage__panel-text {
+  font-size: 13px;
+  color: #57534E;
+  line-height: 1.6;
+}
+
+.backstage__panel-version {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #A1A1AA;
+}
+
+.backstage__backdrop {
+  display: none;
+}

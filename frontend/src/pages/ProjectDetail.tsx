@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Download, Upload, Key } from 'lucide-react';
+import { ChevronRight, Download, Upload, Key } from 'lucide-react';
 import { projects, topics as topicsApi, bcf } from '../api/client';
 import type { Project, Topic, ImportSummary } from '../types/api';
 import TopicList from '../components/TopicList';
@@ -52,18 +52,18 @@ export default function ProjectDetail() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-1">
-        <Link to="/" className="text-text-muted hover:text-text transition">
-          <ArrowLeft size={18} />
-        </Link>
-        <h1 className="text-2xl">{project.name}</h1>
+      <div className="flex items-center gap-1.5 mb-1 text-sm text-text-muted">
+        <Link to="/" className="hover:text-amber transition">Projecten</Link>
+        <ChevronRight size={14} />
+        <span className="text-text font-medium">{project.name}</span>
       </div>
+      <h1 className="text-2xl mb-1">{project.name}</h1>
       {project.description && (
-        <p className="text-sm text-text-muted mb-4 ml-8">{project.description}</p>
+        <p className="text-sm text-text-muted mb-4">{project.description}</p>
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border mb-6 ml-8">
+      <div className="flex items-center gap-1 border-b border-border mb-6">
         <TabButton active={tab === 'topics'} onClick={() => setTab('topics')}>
           Issues ({topicsList.length})
         </TabButton>
@@ -75,7 +75,7 @@ export default function ProjectDetail() {
         </TabButton>
       </div>
 
-      <div className="ml-8">
+      <div>
         {tab === 'topics' && (
           <div>
             <CreateTopic projectId={projectId} onCreated={load} />

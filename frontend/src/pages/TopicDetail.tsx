@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MessageSquare, Eye } from 'lucide-react';
+import { ChevronRight, MessageSquare, Eye } from 'lucide-react';
 import { topics as topicsApi, comments as commentsApi, viewpoints as vpApi } from '../api/client';
 import type { Topic, Comment, Viewpoint } from '../types/api';
 import { StatusBadge } from '../components/StatusBadge';
@@ -37,14 +37,16 @@ export default function TopicDetail() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-1">
-        <Link to={`/projects/${projectId}`} className="text-text-muted hover:text-text transition">
-          <ArrowLeft size={18} />
-        </Link>
-        <h1 className="text-2xl">{topic.title}</h1>
+      <div className="flex items-center gap-1.5 mb-1 text-sm text-text-muted">
+        <Link to="/" className="hover:text-amber transition">Projecten</Link>
+        <ChevronRight size={14} />
+        <Link to={`/projects/${projectId}`} className="hover:text-amber transition">Project</Link>
+        <ChevronRight size={14} />
+        <span className="text-text font-medium truncate max-w-[200px]">{topic.title}</span>
       </div>
+      <h1 className="text-2xl mb-1">{topic.title}</h1>
 
-      <div className="flex flex-wrap items-center gap-2 ml-8 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6">
         <StatusBadge value={topic.topic_status} type="status" />
         <StatusBadge value={topic.priority} type="priority" />
         {topic.topic_type && (
@@ -60,7 +62,7 @@ export default function TopicDetail() {
         )}
       </div>
 
-      <div className="ml-8 grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           {topic.description && (
             <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
