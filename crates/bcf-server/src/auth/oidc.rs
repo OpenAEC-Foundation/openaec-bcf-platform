@@ -2,12 +2,15 @@
 //!
 //! Discovers the OIDC provider, generates authorization URLs (with PKCE),
 //! exchanges authorization codes for tokens, and validates ID tokens.
+//! JWKS is fetched lazily on first token validation (not at startup).
 
 use base64::Engine;
 use jsonwebtoken::{decode, decode_header, jwk::JwkSet, DecodingKey, Validation};
 use rand::Rng;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use crate::models::user::OidcUserClaims;
 
@@ -42,7 +45,7 @@ struct IdTokenClaims {
 #[derive(Clone)]
 pub struct OidcClient {
   discovery: OidcDiscovery,
-  jwks: JwkSet,
+  jwks: Arc<RwLock<Option<JwkSet>>>,
   client_id: String,
   client_secret: String,
   redirect_uri: String,
@@ -50,7 +53,7 @@ pub struct OidcClient {
 }
 
 impl OidcClient {
-  /// Discover the OIDC provider and fetch its JWKS.
+  /// Discover the OIDC provider. JWKS is fetched lazily on first use.
   pub async fn discover(
     issuer_url: &str,
     client_id: &str,
@@ -73,19 +76,15 @@ impl OidcClient {
       .await
       .map_err(|e| OidcError::Discovery(format!("invalid discovery document: {e}")))?;
 
-    // Fetch JWKS
-    let jwks: JwkSet = http
-      .get(&discovery.jwks_uri)
-      .send()
-      .await
-      .map_err(|e| OidcError::Discovery(format!("failed to fetch JWKS: {e}")))?
-      .json()
-      .await
-      .map_err(|e| OidcError::Discovery(format!("invalid JWKS: {e}")))?;
+    tracing::info!(
+      issuer = %discovery.issuer,
+      jwks_uri = %discovery.jwks_uri,
+      "OIDC provider discovered"
+    );
 
     Ok(Self {
       discovery,
-      jwks,
+      jwks: Arc::new(RwLock::new(None)),
       client_id: client_id.to_string(),
       client_secret: client_secret.to_string(),
       redirect_uri: redirect_uri.to_string(),
@@ -93,15 +92,47 @@ impl OidcClient {
     })
   }
 
+  /// Fetch (or re-fetch) JWKS from the provider.
+  async fn fetch_jwks(&self) -> Result<JwkSet, OidcError> {
+    let body = self
+      .http
+      .get(&self.discovery.jwks_uri)
+      .send()
+      .await
+      .map_err(|e| OidcError::Discovery(format!("failed to fetch JWKS: {e}")))?
+      .text()
+      .await
+      .map_err(|e| OidcError::Discovery(format!("failed to read JWKS: {e}")))?;
+
+    // Parse as JwkSet, defaulting to empty keys if body is "{}" or missing "keys"
+    let jwks: JwkSet = serde_json::from_str(&body).unwrap_or(JwkSet { keys: vec![] });
+
+    tracing::info!(keys = jwks.keys.len(), "fetched JWKS");
+    Ok(jwks)
+  }
+
+  /// Get cached JWKS or fetch if not yet loaded.
+  async fn get_jwks(&self) -> Result<JwkSet, OidcError> {
+    {
+      let cached = self.jwks.read().await;
+      if let Some(ref jwks) = *cached {
+        if !jwks.keys.is_empty() {
+          return Ok(jwks.clone());
+        }
+      }
+    }
+    // Fetch and cache
+    let jwks = self.fetch_jwks().await?;
+    *self.jwks.write().await = Some(jwks.clone());
+    Ok(jwks)
+  }
+
   /// Generate the authorization URL with PKCE.
-  ///
-  /// Returns (auth_url, state, nonce, pkce_verifier).
   pub fn authorize_url(&self) -> (String, String, String, String) {
     let state = generate_random_string(32);
     let nonce = generate_random_string(32);
     let pkce_verifier = generate_random_string(64);
 
-    // S256 PKCE challenge
     let challenge = {
       let hash = Sha256::digest(pkce_verifier.as_bytes());
       base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(hash)
@@ -128,7 +159,6 @@ impl OidcClient {
     pkce_verifier: &str,
     nonce: &str,
   ) -> Result<OidcUserClaims, OidcError> {
-    // Exchange code for tokens
     let token_response: TokenResponse = self
       .http
       .post(&self.discovery.token_endpoint)
@@ -151,8 +181,7 @@ impl OidcClient {
       .id_token
       .ok_or_else(|| OidcError::TokenExchange("missing id_token in response".to_string()))?;
 
-    // Validate the ID token
-    let claims = self.validate_id_token(&id_token_str, nonce)?;
+    let claims = self.validate_id_token(&id_token_str, nonce).await?;
 
     Ok(OidcUserClaims {
       sub: claims.sub,
@@ -163,7 +192,7 @@ impl OidcClient {
   }
 
   /// Validate an ID token JWT against the provider's JWKS.
-  fn validate_id_token(
+  async fn validate_id_token(
     &self,
     token: &str,
     _nonce: &str,
@@ -171,14 +200,22 @@ impl OidcClient {
     let header = decode_header(token)
       .map_err(|e| OidcError::TokenExchange(format!("invalid JWT header: {e}")))?;
 
-    // Find the matching key in JWKS
     let kid = header
       .kid
       .as_ref()
       .ok_or_else(|| OidcError::TokenExchange("JWT has no kid".to_string()))?;
 
-    let jwk = self
-      .jwks
+    // Get JWKS (lazy fetch)
+    let mut jwks = self.get_jwks().await?;
+
+    // If kid not found, re-fetch JWKS (key rotation)
+    if jwks.find(kid).is_none() {
+      tracing::info!(kid = %kid, "JWK not found, re-fetching JWKS");
+      jwks = self.fetch_jwks().await?;
+      *self.jwks.write().await = Some(jwks.clone());
+    }
+
+    let jwk = jwks
       .find(kid)
       .ok_or_else(|| OidcError::TokenExchange(format!("no matching JWK for kid: {kid}")))?;
 
