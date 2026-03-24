@@ -10,55 +10,43 @@
 | **2** | Viewpoint CRUD + snapshot storage | ✅ Done |
 | **3** | BCF ZIP import/export | ✅ Done |
 | **4** | Authenticatie (Authentik OIDC + API keys) | ✅ Done |
-| **5** | Frontend (React 18, TypeScript, Vite, Tailwind) | ❌ Niet gestart |
+| **5** | Frontend (React 18, TypeScript, Vite, Tailwind) | ✅ Done |
 
 ## Wat werkt
+
+### Frontend (React SPA)
+- Project lijst met create/delete
+- Project detail met tabs (Issues, Import/Export, API Keys)
+- Topic lijst met status/priority badges, create/delete
+- Topic detail met beschrijving, comments, viewpoints
+- Comment thread met add/delete
+- Viewpoint cards met snapshot preview en camera info
+- BCF ZIP import (drag & drop) en export (download)
+- API key management (create, copy, revoke)
+- OIDC login flow (token opslaan, meesturen)
+- Responsive layout met 3BM brand colors
+- Vite dev proxy naar backend
 
 ### Backend (bcf-server)
 - Volledige REST API voor projects, topics, comments, viewpoints
 - BCF v2.1 conforme endpoints (`/bcf/2.1/...`)
 - Platform endpoints (`/api/v1/...`)
-- Multipart BCF ZIP import (genereert nieuwe UUIDs)
-- BCF ZIP export
+- Multipart BCF ZIP import/export
 - Snapshot storage (filesystem, base64 via API)
-- Health check endpoint
-- Structured logging (tracing)
-- Error handling met automatische HTTP status mapping
-- CORS enabled
-
-### Authenticatie (Fase 4)
-- **OIDC login flow**: `/auth/login` → Authentik redirect → `/auth/callback` → JWT sessie
-- **Session JWT**: 24-uur tokens, `Authorization: Bearer <jwt>`
-- **API keys**: `bcfk_xxx` format, bcrypt hashing, prefix-based lookup
-- **AuthUser extractor**: Automatisch JWT of API key validatie in handlers
-- **JIT user provisioning**: Gebruikers worden automatisch aangemaakt vanuit OIDC claims
-- **Backwards compatible**: `AUTH_ENABLED=false` (default) = open access mode
-- **API key management**: CRUD endpoints (`/api/v1/projects/{id}/api-keys`)
-- **PKCE**: Authorization code flow met S256 PKCE
-- Handlers vullen `created_by`, `creation_author`, `author_id` bij authenticatie
-
-### Core library (bcf-core)
-- BCF 2.1 types (Project, Topic, Comment, Viewpoint, Camera, Components)
-- XML parsing (markup.bcf, viewpoint.bcfv)
-- ZIP lezen/schrijven
-
-### Database
-- PostgreSQL 16 schema met 8 tabellen
-- Migratie: `001_initial_schema.sql`
-- Roles: owner/admin/member/viewer (schema aanwezig, enforcement in handlers)
+- OIDC authenticatie + session JWT + API keys
+- Structured logging, CORS, error handling
 
 ### Infrastructuur
 - Docker Compose (dev + prod)
-- Multi-stage Dockerfile met dependency caching
-- Caddy reverse proxy config
-- Deploy script
-- Migraties draaien automatisch bij startup
+- Multi-stage Dockerfile (frontend build + Rust build)
+- Caddy: SPA routing + API reverse proxy
+- Deploy script, auto-migrations
 
 ## Wat ontbreekt
 
-- **Frontend**: geen `frontend/` map aanwezig
-- **Role-based access control**: schema aanwezig, enforcement op route-niveau nog niet
+- **Role-based access control**: schema aanwezig, enforcement nog niet
 - **Event/audit log endpoints**: schema bestaat, endpoints niet
-- **Project extensions endpoints**: custom enums per project (schema aanwezig)
-- **Input validatie**: alleen basis checks, geen BCF-specifieke constraints
-- **Tests**: één testbestand (`tests/api_test.rs`), minimale coverage
+- **Project extensions endpoints**: custom enums per project
+- **Input validatie**: alleen basis checks
+- **Tests**: minimale coverage
+- **Koppeling met OpenAEC Validator**

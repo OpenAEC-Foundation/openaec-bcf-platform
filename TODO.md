@@ -2,20 +2,6 @@
 
 > Laatste update: 2026-03-24
 
-## Fase 5 — Frontend
-
-- [ ] React 18 + TypeScript + Vite project opzetten
-- [ ] TailwindCSS met 3BM brand colors configureren
-- [ ] Login flow (OIDC redirect via `/auth/login`)
-- [ ] Auth context (JWT opslaan, meesturen in requests)
-- [ ] Project lijst/detail views
-- [ ] Topic lijst/detail/create/edit views
-- [ ] Comment thread UI
-- [ ] Viewpoint weergave (3D camera positie, snapshot preview)
-- [ ] BCF ZIP upload (import) UI
-- [ ] BCF ZIP download (export) UI
-- [ ] API key management UI
-
 ## Backlog
 
 - [ ] Role-based access control afdwingen op routes (middleware per role)
@@ -26,3 +12,7 @@
 - [ ] Conflict resolution bij concurrent edits
 - [ ] Koppeling met OpenAEC Validator
 - [ ] OIDC token refresh flow
+- [ ] Topic edit form in frontend
+- [ ] User avatar weergave bij comments
+- [ ] Dark mode
+- [ ] Search/filter op topic lijst

@@ -1,15 +1,30 @@
 bcf.open-aec.com {
-	reverse_proxy bcf-server:3000
+	# API routes → backend
+	handle /bcf/* {
+		reverse_proxy bcf-server:3000
+	}
+	handle /api/* {
+		reverse_proxy bcf-server:3000
+	}
+	handle /auth/* {
+		reverse_proxy bcf-server:3000
+	}
+	handle /health {
+		reverse_proxy bcf-server:3000
+	}
+
+	# Frontend SPA — serve static files, fallback to index.html
+	handle {
+		root * /app/static
+		try_files {path} /index.html
+		file_server
+	}
 
 	header {
 		# Security headers
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
-		# CORS — restrict in production
-		Access-Control-Allow-Origin *
-		Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-		Access-Control-Allow-Headers "Content-Type, Authorization"
 	}
 
 	log {

@@ -1,4 +1,13 @@
-# Stage 1: Build the Rust binary
+# Stage 1: Build the frontend
+FROM node:22-slim AS frontend-builder
+
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Build the Rust binary
 FROM rust:latest AS builder
 
 # Limit parallelism to reduce memory usage on small servers
@@ -30,7 +39,7 @@ COPY crates/ crates/
 RUN touch crates/bcf-core/src/lib.rs crates/bcf-server/src/main.rs && \
     cargo build --release -p bcf-server
 
-# Stage 2: Minimal runtime image
+# Stage 3: Minimal runtime image
 FROM debian:bookworm-slim
 
 RUN apt-get update && \
@@ -44,6 +53,9 @@ WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/target/release/bcf-server /app/bcf-server
+
+# Copy frontend build output
+COPY --from=frontend-builder /app/frontend/dist /app/static
 
 # Copy migrations for runtime migration
 COPY migrations/ /app/migrations/

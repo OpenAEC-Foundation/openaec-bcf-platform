@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  /* 3BM Brand Colors */
+  --color-violet: #350E35;
+  --color-violet-light: #4a1f4a;
+  --color-verdigris: #44B6A8;
+  --color-verdigris-light: #6bc9be;
+  --color-yellow: #EFBD75;
+  --color-yellow-light: #f5d4a0;
+  --color-magenta: #A01C48;
+  --color-magenta-light: #c4356a;
+  --color-peach: #DB4C40;
+  --color-peach-light: #e5726a;
+
+  --color-surface: #f8f9fa;
+  --color-surface-dark: #e9ecef;
+  --color-text: #1a1a2e;
+  --color-text-muted: #6c757d;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
