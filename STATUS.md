@@ -14,9 +14,16 @@
 
 ## Wat werkt
 
-### Frontend (React SPA)
+### Frontend (React SPA — OpenAEC ribbon UI)
+- AppBar (40px): donker chrome, "OpenAEC" brand wordmark, user menu (login/logout)
+- Ribbon toolbar (122px): Bestand tab (amber, opent Backstage), Start tab, Beeld tab
+- Backstage overlay: BCF Import/Export, Over, Sluiten
+- StatusBar (22px): project/topic count, connectie-indicator
+- OpenAEC Foundation design system (DESIGN-SYSTEM.md v0.4)
+- Fonts: Space Grotesk (headings), Inter (body), JetBrains Mono (code)
+- Kleuren: amber accenten, deep-forge chrome, blueprint-white content
 - Project lijst met create/delete
-- Project detail met tabs (Issues, Import/Export, API Keys)
+- Project detail met page tabs (Issues, Import/Export, API Keys)
 - Topic lijst met status/priority badges, create/delete
 - Topic detail met beschrijving, comments, viewpoints
 - Comment thread met add/delete
@@ -24,8 +31,6 @@
 - BCF ZIP import (drag & drop) en export (download)
 - API key management (create, copy, revoke)
 - OIDC login flow (token opslaan, meesturen)
-- Responsive layout met 3BM brand colors
-- Vite dev proxy naar backend
 
 ### Backend (bcf-server)
 - Volledige REST API voor projects, topics, comments, viewpoints
@@ -33,14 +38,24 @@
 - Platform endpoints (`/api/v1/...`)
 - Multipart BCF ZIP import/export
 - Snapshot storage (filesystem, base64 via API)
-- OIDC authenticatie + session JWT + API keys
+- OIDC authenticatie + session JWT (24h) + API keys (bcfk_xxx)
+- Lazy JWKS fetch (geen crash bij lege JWKS)
+- Static file serving met SPA fallback (/app/static → index.html)
 - Structured logging, CORS, error handling
 
+### Auth (live op productie)
+- Authentik OIDC provider geconfigureerd (bcf-platform app)
+- AUTH_ENABLED=true op server
+- Login via https://auth.open-aec.com
+- JIT user provisioning vanuit OIDC claims
+- API key systeem voor service-to-service auth
+
 ### Infrastructuur
-- Docker Compose (dev + prod)
-- Multi-stage Dockerfile (frontend build + Rust build)
-- Caddy: SPA routing + API reverse proxy
-- Deploy script, auto-migrations
+- Docker Compose (dev + prod) met auth env vars
+- Multi-stage Dockerfile (Node frontend + Rust backend)
+- Caddy reverse proxy (direct naar bcf-server, geen Authentik forward auth)
+- Deploy script, auto-migrations bij startup
+- Live op https://bcf.open-aec.com
 
 ## Wat ontbreekt
 
@@ -50,3 +65,4 @@
 - **Input validatie**: alleen basis checks
 - **Tests**: minimale coverage
 - **Koppeling met OpenAEC Validator**
+- **i18n**: labels nu hardcoded NL, geen taalwisseling
