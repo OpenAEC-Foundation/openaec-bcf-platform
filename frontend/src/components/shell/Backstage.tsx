@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { iconImportBcf, iconExportBcf, iconSettings, iconAbout, iconClose } from './icons';
+import { brand } from '../../config/brand';
+import { iconImportBcf, iconExportBcf, iconSettings, iconAbout } from './icons';
 import './Backstage.css';
 
 type Panel = 'none' | 'about';
@@ -10,6 +11,8 @@ interface BackstageProps {
   onImportBcf?: () => void;
   onExportBcf?: () => void;
 }
+
+const iconBack = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 
 export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: BackstageProps) {
   const [activePanel, setActivePanel] = useState<Panel>('none');
@@ -28,13 +31,23 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
     }
   }, [open, handleKeyDown]);
 
+  // Reset active panel when closing
+  useEffect(() => {
+    if (!open) setActivePanel('none');
+  }, [open]);
+
   if (!open) return null;
 
   return (
     <div className="backstage">
       <div className="backstage__sidebar">
-        <div className="backstage__sidebar-header">Bestand</div>
+        {/* Back button */}
+        <button className="backstage__back-btn" onClick={onClose}>
+          <span dangerouslySetInnerHTML={{ __html: iconBack }} />
+          <span>Terug</span>
+        </button>
 
+        {/* Menu items */}
         <button
           className="backstage__item"
           onClick={() => {
@@ -59,7 +72,7 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
           <span className="backstage__item-shortcut">Ctrl+E</span>
         </button>
 
-        <div className="backstage__separator" />
+        <div className="backstage__divider" />
 
         <button className="backstage__item backstage__item--disabled">
           <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconSettings }} />
@@ -74,10 +87,9 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
           <span className="backstage__item-label">Over</span>
         </button>
 
-        <div className="backstage__separator" />
+        <div className="backstage__divider" />
 
         <button className="backstage__item" onClick={onClose}>
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconClose }} />
           <span className="backstage__item-label">Sluiten</span>
           <span className="backstage__item-shortcut">Esc</span>
         </button>
@@ -85,21 +97,26 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
 
       <div className="backstage__panel">
         {activePanel === 'about' && (
-          <div>
-            <div className="backstage__panel-title">Over OpenAEC BCF Platform</div>
-            <div className="backstage__panel-text">
+          <div className="backstage__about">
+            <div className="backstage__about-brand">
+              <span className="backstage__about-brand-prefix">{brand.namePrefix}</span>
+              <span className="backstage__about-brand-accent">{brand.nameAccent}</span>
+            </div>
+            <div className="backstage__about-product">{brand.product}</div>
+            <div className="backstage__about-tagline">{brand.tagline}</div>
+            <div className="backstage__about-separator" />
+            <div className="backstage__about-text">
               Een centraal BCF issue management platform voor BIM-projecten.
-              <br />
               Importeer en exporteer .bcfzip bestanden, beheer issues en viewpoints,
               en werk samen met je team.
             </div>
-            <div className="backstage__panel-version">
+            <div className="backstage__about-version">
               Versie 0.1.0 &middot; BCF 2.1 compatibel
             </div>
           </div>
         )}
         {activePanel === 'none' && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#A1A1AA', fontSize: '13px' }}>
+          <div className="backstage__panel-placeholder">
             Kies een optie in het menu
           </div>
         )}

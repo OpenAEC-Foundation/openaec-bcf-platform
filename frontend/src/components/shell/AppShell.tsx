@@ -57,6 +57,33 @@ export default function AppShell({ children }: AppShellProps) {
     }
   }, [params.projectId]);
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape → close backstage
+      if (e.key === 'Escape' && backstageOpen) {
+        e.preventDefault();
+        setBackstageOpen(false);
+        return;
+      }
+      // Ctrl+I → import BCF
+      if (e.ctrlKey && e.key === 'i') {
+        e.preventDefault();
+        handleImportBcf();
+        return;
+      }
+      // Ctrl+E → export BCF
+      if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        handleExportBcf();
+        return;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [backstageOpen, handleImportBcf, handleExportBcf]);
+
   return (
     <div className="flex h-screen flex-col" data-theme="light">
       <AppBar user={user} onLogin={login} onLogout={logout} />

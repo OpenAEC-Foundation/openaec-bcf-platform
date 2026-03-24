@@ -10,6 +10,38 @@
   z-index: 100;
 }
 
+.app-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-bar__quick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--theme-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.app-bar__quick-btn:hover {
+  background: var(--theme-hover);
+  color: var(--theme-accent);
+}
+
+.app-bar__quick-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--theme-ribbon-group-separator);
+  margin: 0 6px;
+}
+
 .app-bar__brand {
   display: flex;
   align-items: center;

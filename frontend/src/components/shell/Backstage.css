@@ -14,25 +14,44 @@
   to { opacity: 1; }
 }
 
+/* -- Sidebar ------------------------------- */
 .backstage__sidebar {
-  width: 280px;
-  min-width: 280px;
-  background: var(--theme-bg);
+  width: 260px;
+  min-width: 260px;
+  background: var(--theme-bg-lighter);
   display: flex;
   flex-direction: column;
-  padding: 8px 0;
+  padding: 0;
   border-right: 1px solid var(--theme-border-subtle);
 }
 
-.backstage__sidebar-header {
-  padding: 12px 20px 16px;
+/* -- Back button --------------------------- */
+.backstage__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  background: var(--theme-accent);
+  color: var(--theme-accent-text);
   font-family: "Space Grotesk", system-ui, sans-serif;
   font-weight: 700;
-  font-size: 18px;
-  color: var(--theme-accent);
-  letter-spacing: -0.02em;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.12s;
+  text-align: left;
 }
 
+.backstage__back-btn:hover {
+  background: var(--theme-accent-hover);
+}
+
+.backstage__back-btn svg {
+  color: var(--theme-accent-text);
+}
+
+/* -- Menu items ---------------------------- */
 .backstage__item {
   display: flex;
   align-items: center;
@@ -40,13 +59,14 @@
   width: 100%;
   padding: 10px 20px;
   border: none;
+  border-left: 3px solid transparent;
   background: transparent;
   color: var(--theme-text);
   font-size: 13px;
   font-weight: 500;
   font-family: "Inter", system-ui, sans-serif;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
   text-align: left;
 }
 
@@ -58,7 +78,7 @@
 .backstage__item--active {
   background: var(--theme-accent-soft);
   color: var(--theme-accent);
-  border-right: 3px solid var(--theme-accent);
+  border-left-color: var(--theme-accent);
 }
 
 .backstage__item--disabled {
@@ -74,9 +94,14 @@
   align-items: center;
   justify-content: center;
   color: var(--theme-text-secondary);
+  flex-shrink: 0;
 }
 
 .backstage__item:hover .backstage__item-icon {
+  color: var(--theme-accent);
+}
+
+.backstage__item--active .backstage__item-icon {
   color: var(--theme-accent);
 }
 
@@ -87,18 +112,21 @@
 .backstage__item-shortcut {
   font-size: 11px;
   color: var(--theme-backstage-item-shortcut);
+  font-weight: 400;
 }
 
 .backstage__item:hover .backstage__item-shortcut {
   color: var(--theme-backstage-item-shortcut-hover);
 }
 
-.backstage__separator {
+/* -- Divider ------------------------------- */
+.backstage__divider {
   height: 1px;
-  margin: 6px 16px;
-  background: var(--theme-ribbon-group-separator);
+  margin: 4px 16px;
+  background: var(--theme-border-subtle);
 }
 
+/* -- Panel --------------------------------- */
 .backstage__panel {
   flex: 1;
   background: var(--theme-content-bg);
@@ -106,26 +134,64 @@
   overflow-y: auto;
 }
 
-.backstage__panel-title {
+.backstage__panel-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #A1A1AA;
+  font-size: 13px;
+}
+
+/* -- About panel --------------------------- */
+.backstage__about {
+  max-width: 500px;
+}
+
+.backstage__about-brand {
   font-family: "Space Grotesk", system-ui, sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.backstage__about-brand-prefix {
   color: #36363E;
+}
+
+.backstage__about-brand-accent {
+  color: var(--theme-accent);
+}
+
+.backstage__about-product {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: #57534E;
+  margin-bottom: 4px;
+}
+
+.backstage__about-tagline {
+  font-size: 13px;
+  color: #78716C;
   margin-bottom: 16px;
 }
 
-.backstage__panel-text {
+.backstage__about-separator {
+  height: 1px;
+  background: #E7E5E4;
+  margin-bottom: 16px;
+}
+
+.backstage__about-text {
   font-size: 13px;
   color: #57534E;
   line-height: 1.6;
 }
 
-.backstage__panel-version {
-  margin-top: 12px;
+.backstage__about-version {
+  margin-top: 16px;
   font-size: 12px;
   color: #A1A1AA;
-}
-
-.backstage__backdrop {
-  display: none;
 }
