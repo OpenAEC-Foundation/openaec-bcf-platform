@@ -18,6 +18,7 @@ pub struct CreateTopicParams<'a> {
   pub labels: &'a serde_json::Value,
   pub due_date: Option<chrono::NaiveDate>,
   pub index_number: Option<i32>,
+  pub creation_author: Option<Uuid>,
 }
 
 /// Parameters for updating a topic.
@@ -100,8 +101,9 @@ pub async fn create_topic(
 ) -> Result<TopicRow, sqlx::Error> {
   sqlx::query_as::<_, TopicRow>(
     "INSERT INTO topics (project_id, title, description, topic_type, topic_status,
-                         priority, assigned_to, stage, labels, due_date, index_number)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                         priority, assigned_to, stage, labels, due_date, index_number,
+                         creation_author)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
      RETURNING id, project_id, title, description, topic_type, topic_status,
                priority, assigned_to, stage, labels, due_date,
                creation_author, modified_author, index_number,
@@ -118,6 +120,7 @@ pub async fn create_topic(
   .bind(params.labels)
   .bind(params.due_date)
   .bind(params.index_number)
+  .bind(params.creation_author)
   .fetch_one(pool)
   .await
 }

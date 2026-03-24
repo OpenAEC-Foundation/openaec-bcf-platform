@@ -11,6 +11,7 @@ use axum::{Json, Router};
 use serde::Serialize;
 use uuid::Uuid;
 
+use crate::auth::OptionalAuthUser;
 use crate::db;
 use crate::db::topics::CreateTopicParams;
 use crate::error::{AppError, AppResult};
@@ -35,6 +36,7 @@ struct ImportSummary {
 async fn import_bcf(
   State(state): State<AppState>,
   Path(project_id): Path<Uuid>,
+  auth: OptionalAuthUser,
   mut multipart: Multipart,
 ) -> AppResult<(StatusCode, Json<ImportSummary>)> {
   // Verify project exists
@@ -74,6 +76,11 @@ async fn import_bcf(
   for folder in &archive.topics {
     // Create topic
     let labels = serde_json::to_value(&folder.topic.labels).unwrap_or_default();
+    let creation_author = auth
+      .0
+      .as_ref()
+      .map(|u| u.user_id)
+      .filter(|id| !id.is_nil());
     let params = CreateTopicParams {
       project_id,
       title: &folder.topic.title,
@@ -86,6 +93,7 @@ async fn import_bcf(
       labels: &labels,
       due_date: folder.topic.due_date,
       index_number: folder.topic.index,
+      creation_author,
     };
     let topic_row = db::topics::create_topic(&state.pool, &params).await?;
     total_topics += 1;
@@ -97,6 +105,7 @@ async fn import_bcf(
         topic_row.id,
         &comment.comment,
         None,
+        creation_author,
       )
       .await?;
       total_comments += 1;

@@ -42,15 +42,17 @@ pub async fn create_comment(
   topic_id: Uuid,
   comment: &str,
   viewpoint_id: Option<Uuid>,
+  author_id: Option<Uuid>,
 ) -> Result<CommentRow, sqlx::Error> {
   sqlx::query_as::<_, CommentRow>(
-    "INSERT INTO comments (topic_id, comment, viewpoint_id)
-     VALUES ($1, $2, $3)
+    "INSERT INTO comments (topic_id, comment, viewpoint_id, author_id)
+     VALUES ($1, $2, $3, $4)
      RETURNING id, topic_id, author_id, comment, viewpoint_id, created_at, updated_at",
   )
   .bind(topic_id)
   .bind(comment)
   .bind(viewpoint_id)
+  .bind(author_id)
   .fetch_one(pool)
   .await
 }

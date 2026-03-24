@@ -7,6 +7,7 @@ use axum::routing::get;
 use axum::{Json, Router};
 use uuid::Uuid;
 
+use crate::auth::OptionalAuthUser;
 use crate::db;
 use crate::db::topics::{CreateTopicParams, UpdateTopicParams};
 use crate::error::{AppError, AppResult};
@@ -46,10 +47,20 @@ async fn get_topic(
   Ok(Json(row.into()))
 }
 
+/// Helper to convert an optional auth user to a database-friendly Option<Uuid>.
+fn user_id_or_none(auth: &OptionalAuthUser) -> Option<Uuid> {
+  auth
+    .0
+    .as_ref()
+    .map(|u| u.user_id)
+    .filter(|id| !id.is_nil())
+}
+
 /// POST /topics — Create a new topic.
 async fn create_topic(
   State(state): State<AppState>,
   Path(project_id): Path<Uuid>,
+  auth: OptionalAuthUser,
   Json(body): Json<CreateTopicRequest>,
 ) -> AppResult<(axum::http::StatusCode, Json<TopicResponse>)> {
   if body.title.trim().is_empty() {
@@ -62,6 +73,7 @@ async fn create_topic(
     .ok_or_else(|| AppError::NotFound(format!("project {project_id}")))?;
 
   let labels = serde_json::to_value(&body.labels).unwrap_or_default();
+  let creation_author = user_id_or_none(&auth);
   let params = CreateTopicParams {
     project_id,
     title: &body.title,
@@ -74,6 +86,7 @@ async fn create_topic(
     labels: &labels,
     due_date: body.due_date,
     index_number: body.index,
+    creation_author,
   };
   let row = db::topics::create_topic(&state.pool, &params).await?;
   Ok((axum::http::StatusCode::CREATED, Json(row.into())))

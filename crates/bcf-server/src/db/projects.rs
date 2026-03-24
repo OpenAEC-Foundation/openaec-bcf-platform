@@ -36,14 +36,16 @@ pub async fn create_project(
   pool: &PgPool,
   name: &str,
   description: &str,
+  created_by: Option<Uuid>,
 ) -> Result<ProjectRow, sqlx::Error> {
   sqlx::query_as::<_, ProjectRow>(
-    "INSERT INTO projects (name, description)
-     VALUES ($1, $2)
+    "INSERT INTO projects (name, description, created_by)
+     VALUES ($1, $2, $3)
      RETURNING id, name, description, created_by, created_at, updated_at",
   )
   .bind(name)
   .bind(description)
+  .bind(created_by)
   .fetch_one(pool)
   .await
 }

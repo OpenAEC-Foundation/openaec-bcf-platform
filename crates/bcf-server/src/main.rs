@@ -19,6 +19,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
+use crate::auth::oidc::OidcClient;
 use crate::config::Config;
 use crate::routes::api_router;
 use crate::state::AppState;
@@ -52,8 +53,25 @@ async fn main() -> anyhow::Result<()> {
   sqlx::migrate!("../../migrations").run(&pool).await?;
   tracing::info!("migrations complete");
 
+  // Initialize OIDC client if auth is enabled
+  let oidc_client = if config.auth_enabled {
+    tracing::info!("auth enabled — discovering OIDC provider");
+    let client = OidcClient::discover(
+      config.oidc_issuer_url.as_deref().unwrap(),
+      config.oidc_client_id.as_deref().unwrap(),
+      config.oidc_client_secret.as_deref().unwrap(),
+      config.oidc_redirect_uri.as_deref().unwrap(),
+    )
+    .await?;
+    tracing::info!("OIDC provider discovered successfully");
+    Some(client)
+  } else {
+    tracing::info!("auth disabled — running in open access mode");
+    None
+  };
+
   // Build application
-  let state = AppState::new(pool, config.clone());
+  let state = AppState::new(pool, config.clone(), oidc_client);
 
   let cors = CorsLayer::new()
     .allow_origin(Any)

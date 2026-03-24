@@ -4,6 +4,8 @@ use axum::Router;
 
 use crate::state::AppState;
 
+pub mod api_keys;
+pub mod auth_routes;
 pub mod bcfio;
 pub mod comments;
 pub mod health;
@@ -15,6 +17,7 @@ pub mod viewpoints;
 pub fn api_router() -> Router<AppState> {
   Router::new()
     .merge(health::routes())
+    .merge(auth_routes::routes())
     .nest("/bcf/2.1", bcf_routes())
     .nest("/api/v1", platform_routes())
 }
@@ -30,4 +33,5 @@ fn platform_routes() -> Router<AppState> {
   Router::new()
     .nest("/projects", projects::platform_project_routes())
     .nest("/projects", bcfio::routes())
+    .nest("/projects", api_keys::routes())
 }

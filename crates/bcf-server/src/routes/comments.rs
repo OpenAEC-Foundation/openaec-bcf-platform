@@ -7,6 +7,7 @@ use axum::routing::get;
 use axum::{Json, Router};
 use uuid::Uuid;
 
+use crate::auth::OptionalAuthUser;
 use crate::db;
 use crate::error::{AppError, AppResult};
 use crate::models::comment::{CommentResponse, CreateCommentRequest, UpdateCommentRequest};
@@ -40,10 +41,20 @@ async fn get_comment(
   Ok(Json(row.into()))
 }
 
+/// Helper to convert an optional auth user to a database-friendly Option<Uuid>.
+fn user_id_or_none(auth: &OptionalAuthUser) -> Option<Uuid> {
+  auth
+    .0
+    .as_ref()
+    .map(|u| u.user_id)
+    .filter(|id| !id.is_nil())
+}
+
 /// POST /comments — Create a new comment.
 async fn create_comment(
   State(state): State<AppState>,
   Path((_project_id, topic_id)): Path<(Uuid, Uuid)>,
+  auth: OptionalAuthUser,
   Json(body): Json<CreateCommentRequest>,
 ) -> AppResult<(axum::http::StatusCode, Json<CommentResponse>)> {
   if body.comment.trim().is_empty() {
@@ -60,11 +71,13 @@ async fn create_comment(
     return Err(AppError::NotFound(format!("topic {topic_id}")));
   }
 
+  let author_id = user_id_or_none(&auth);
   let row = db::comments::create_comment(
     &state.pool,
     topic_id,
     &body.comment,
     body.viewpoint_guid,
+    author_id,
   )
   .await?;
   Ok((axum::http::StatusCode::CREATED, Json(row.into())))

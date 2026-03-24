@@ -8,6 +8,7 @@ use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use uuid::Uuid;
 
+use crate::auth::OptionalAuthUser;
 use crate::db;
 use crate::error::{AppError, AppResult};
 use crate::models::project::{
@@ -50,15 +51,26 @@ async fn get_project(
   Ok(Json(row.into()))
 }
 
+/// Helper to convert an optional auth user to a database-friendly Option<Uuid>.
+fn user_id_or_none(auth: &OptionalAuthUser) -> Option<Uuid> {
+  auth
+    .0
+    .as_ref()
+    .map(|u| u.user_id)
+    .filter(|id| !id.is_nil())
+}
+
 /// POST /projects — Create a new project.
 async fn create_project(
   State(state): State<AppState>,
+  auth: OptionalAuthUser,
   Json(body): Json<CreateProjectRequest>,
 ) -> AppResult<(axum::http::StatusCode, Json<ProjectResponse>)> {
   if body.name.trim().is_empty() {
     return Err(AppError::BadRequest("name is required".to_string()));
   }
-  let row = db::projects::create_project(&state.pool, &body.name, &body.description).await?;
+  let created_by = user_id_or_none(&auth);
+  let row = db::projects::create_project(&state.pool, &body.name, &body.description, created_by).await?;
   Ok((axum::http::StatusCode::CREATED, Json(row.into())))
 }
 
