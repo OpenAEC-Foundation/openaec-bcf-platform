@@ -16,6 +16,7 @@ use std::net::SocketAddr;
 
 use sqlx::postgres::PgPoolOptions;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
 
@@ -78,10 +79,24 @@ async fn main() -> anyhow::Result<()> {
     .allow_methods(Any)
     .allow_headers(Any);
 
-  let app = api_router()
-    .layer(cors)
-    .layer(TraceLayer::new_for_http())
-    .with_state(state);
+  // Serve frontend SPA if static dir exists
+  let static_dir = std::path::Path::new("/app/static");
+  let app = if static_dir.exists() {
+    tracing::info!("serving frontend from /app/static");
+    let serve_dir = ServeDir::new(static_dir)
+      .not_found_service(ServeFile::new(static_dir.join("index.html")));
+    api_router()
+      .fallback_service(serve_dir)
+      .layer(cors)
+      .layer(TraceLayer::new_for_http())
+      .with_state(state)
+  } else {
+    tracing::info!("no static dir found, API-only mode");
+    api_router()
+      .layer(cors)
+      .layer(TraceLayer::new_for_http())
+      .with_state(state)
+  };
 
   // Start server
   let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
