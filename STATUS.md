@@ -14,55 +14,43 @@
 
 ## Wat werkt
 
-### Frontend (React SPA — OpenAEC ribbon UI)
-- AppBar (40px): donker chrome, "OpenAEC" brand wordmark, user menu (login/logout)
-- Ribbon toolbar (122px): Bestand tab (amber, opent Backstage), Start tab, Beeld tab
-- Backstage overlay: BCF Import/Export, Over, Sluiten
+### Frontend (OpenAEC ribbon UI — volledig conform referentie)
+- AppBar (40px): brand wordmark, quick-access (Save, Settings), user menu
+- Ribbon (122px): animated tab indicator, slide-animaties bij tab switch
+- Tabs: Bestand (amber, Backstage), Start (Project/Issues/Acties), Beeld
+- Backstage: amber back button, Import/Export BCF, About panel met brand identity
 - StatusBar (22px): project/topic count, connectie-indicator
-- OpenAEC Foundation design system (DESIGN-SYSTEM.md v0.4)
-- Fonts: Space Grotesk (headings), Inter (body), JetBrains Mono (code)
-- Kleuren: amber accenten, deep-forge chrome, blueprint-white content
-- Project lijst met create/delete
-- Project detail met page tabs (Issues, Import/Export, API Keys)
-- Topic lijst met status/priority badges, create/delete
-- Topic detail met beschrijving, comments, viewpoints
-- Comment thread met add/delete
-- Viewpoint cards met snapshot preview en camera info
+- Keyboard shortcuts: Escape (sluit backstage), Ctrl+I (import), Ctrl+E (export)
+- Brand systeem: brand.ts + injectBrandStyles.ts (runtime CSS var injection)
+- Full themes.css: 150+ CSS vars, light + openaec dark theme
+- Design System v0.4: Space Grotesk, Inter, JetBrains Mono
+- Project CRUD, topic lijst/detail, comments, viewpoints, API keys
 - BCF ZIP import (drag & drop) en export (download)
-- API key management (create, copy, revoke)
-- OIDC login flow (token opslaan, meesturen)
+- OIDC login flow via Authentik
 
 ### Backend (bcf-server)
-- Volledige REST API voor projects, topics, comments, viewpoints
-- BCF v2.1 conforme endpoints (`/bcf/2.1/...`)
-- Platform endpoints (`/api/v1/...`)
-- Multipart BCF ZIP import/export
-- Snapshot storage (filesystem, base64 via API)
-- OIDC authenticatie + session JWT (24h) + API keys (bcfk_xxx)
-- Lazy JWKS fetch (geen crash bij lege JWKS)
-- Static file serving met SPA fallback (/app/static → index.html)
+- Volledige REST API (BCF v2.1 + platform endpoints)
+- OIDC auth + session JWT (24h) + API keys (bcfk_xxx)
+- Lazy JWKS fetch, static file serving met SPA fallback
 - Structured logging, CORS, error handling
 
-### Auth (live op productie)
-- Authentik OIDC provider geconfigureerd (bcf-platform app)
-- AUTH_ENABLED=true op server
-- Login via https://auth.open-aec.com
-- JIT user provisioning vanuit OIDC claims
-- API key systeem voor service-to-service auth
+### Auth (live)
+- Authentik OIDC provider (bcf-platform app)
+- AUTH_ENABLED=true, login werkt
+- JIT user provisioning
 
 ### Infrastructuur
-- Docker Compose (dev + prod) met auth env vars
-- Multi-stage Dockerfile (Node frontend + Rust backend)
-- Caddy reverse proxy (direct naar bcf-server, geen Authentik forward auth)
-- Deploy script, auto-migrations bij startup
+- Docker Compose met auth env vars
+- Multi-stage Dockerfile (Node + Rust)
+- Caddy reverse proxy
 - Live op https://bcf.open-aec.com
 
 ## Wat ontbreekt
 
-- **Role-based access control**: schema aanwezig, enforcement nog niet
-- **Event/audit log endpoints**: schema bestaat, endpoints niet
-- **Project extensions endpoints**: custom enums per project
-- **Input validatie**: alleen basis checks
-- **Tests**: minimale coverage
-- **Koppeling met OpenAEC Validator**
-- **i18n**: labels nu hardcoded NL, geen taalwisseling
+- Role-based access control (schema aanwezig, enforcement niet)
+- Event/audit log endpoints
+- Project extensions endpoints
+- Input validatie (BCF-specifiek)
+- Tests (minimale coverage)
+- Koppeling met OpenAEC Validator
+- i18n (labels hardcoded NL)
