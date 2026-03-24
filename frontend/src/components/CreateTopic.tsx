@@ -7,6 +7,9 @@ interface Props {
   onCreated: () => void;
 }
 
+const inputClass = "w-full border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
+const selectClass = "w-full border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-2.5 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
+
 export default function CreateTopic({ projectId, onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -46,7 +49,7 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 bg-verdigris text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-verdigris-light transition mb-4"
+        className="flex items-center gap-1.5 bg-amber text-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 mb-4"
       >
         <Plus size={16} /> Nieuw issue
       </button>
@@ -54,30 +57,12 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-surface-dark p-4 mb-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-4">
       <div className="grid gap-3">
-        <input
-          type="text"
-          placeholder="Issue titel"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="border border-surface-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
-          autoFocus
-        />
-        <textarea
-          placeholder="Beschrijving (optioneel)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="border border-surface-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40 resize-y"
-        />
+        <input type="text" placeholder="Issue titel" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} autoFocus />
+        <textarea placeholder="Beschrijving (optioneel)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputClass + " resize-y"} />
 
-        {/* Advanced fields toggle */}
-        <button
-          type="button"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-1 text-xs text-text-muted hover:text-text transition w-fit"
-        >
+        <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center gap-1 text-xs text-text-muted hover:text-text transition w-fit">
           {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           {showAdvanced ? 'Minder opties' : 'Meer opties'}
         </button>
@@ -85,22 +70,12 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
         {showAdvanced && (
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
-              <label className="block text-xs text-text-muted mb-1">Type</label>
-              <input
-                type="text"
-                value={topicType}
-                onChange={(e) => setTopicType(e.target.value)}
-                placeholder="bijv. Clash, Request"
-                className="w-full border border-surface-dark rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
-              />
+              <label className="block text-xs font-medium text-text-muted mb-1">Type</label>
+              <input type="text" value={topicType} onChange={(e) => setTopicType(e.target.value)} placeholder="bijv. Clash, Request" className={inputClass} />
             </div>
             <div>
-              <label className="block text-xs text-text-muted mb-1">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-surface-dark rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
-              >
+              <label className="block text-xs font-medium text-text-muted mb-1">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectClass}>
                 <option>Open</option>
                 <option>Active</option>
                 <option>Closed</option>
@@ -108,12 +83,8 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-text-muted mb-1">Prioriteit</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="w-full border border-surface-dark rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
-              >
+              <label className="block text-xs font-medium text-text-muted mb-1">Prioriteit</label>
+              <select value={priority} onChange={(e) => setPriority(e.target.value)} className={selectClass}>
                 <option>Critical</option>
                 <option>High</option>
                 <option>Normal</option>
@@ -124,10 +95,10 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
         )}
 
         <div className="flex gap-2 justify-end">
-          <button type="button" onClick={() => setOpen(false)} className="px-3 py-1.5 text-sm text-text-muted hover:text-text transition">
+          <button type="button" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-text-muted hover:text-text transition">
             Annuleren
           </button>
-          <button type="submit" disabled={creating || !title.trim()} className="bg-verdigris text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-verdigris-light transition disabled:opacity-50">
+          <button type="submit" disabled={creating || !title.trim()} className="bg-amber text-white px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
             {creating ? 'Aanmaken...' : 'Aanmaken'}
           </button>
         </div>

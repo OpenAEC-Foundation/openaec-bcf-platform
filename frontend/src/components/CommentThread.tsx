@@ -36,36 +36,35 @@ export default function CommentThread({ projectId, topicId, comments, onUpdate }
   return (
     <div className="space-y-3">
       {comments.map((c) => (
-        <div key={c.guid} className="bg-white rounded-lg border border-surface-dark p-3 group">
+        <div key={c.guid} className="bg-white rounded-[--radius-md] border border-border p-4 group">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-sm whitespace-pre-wrap flex-1">{c.comment}</p>
+            <p className="text-sm whitespace-pre-wrap flex-1 leading-relaxed">{c.comment}</p>
             <button
               onClick={() => handleDelete(c.guid)}
-              className="p-1 text-text-muted/30 hover:text-peach transition opacity-0 group-hover:opacity-100 shrink-0"
+              className="p-1 text-scaffold-gray/30 hover:text-error transition opacity-0 group-hover:opacity-100 shrink-0"
               title="Verwijderen"
             >
               <Trash2 size={12} />
             </button>
           </div>
-          <p className="text-xs text-text-muted mt-2">
+          <p className="text-xs text-text-subtle mt-2">
             {new Date(c.created_at).toLocaleString('nl-NL')}
           </p>
         </div>
       ))}
 
-      {/* Add comment form */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="text"
           placeholder="Schrijf een comment..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 border border-surface-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
+          className="flex-1 border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-2.5 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
         />
         <button
           type="submit"
           disabled={sending || !text.trim()}
-          className="bg-verdigris text-white p-2 rounded-lg hover:bg-verdigris-light transition disabled:opacity-50"
+          className="bg-amber text-white p-2.5 rounded-[--radius-md] hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send size={16} />
         </button>

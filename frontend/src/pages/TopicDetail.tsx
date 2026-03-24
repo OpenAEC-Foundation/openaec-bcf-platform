@@ -37,44 +37,39 @@ export default function TopicDetail() {
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center gap-3 mb-1">
         <Link to={`/projects/${projectId}`} className="text-text-muted hover:text-text transition">
           <ArrowLeft size={18} />
         </Link>
-        <h1 className="text-2xl font-bold">{topic.title}</h1>
+        <h1 className="text-2xl">{topic.title}</h1>
       </div>
 
-      {/* Meta badges */}
       <div className="flex flex-wrap items-center gap-2 ml-8 mb-6">
         <StatusBadge value={topic.topic_status} type="status" />
         <StatusBadge value={topic.priority} type="priority" />
         {topic.topic_type && (
-          <span className="text-xs bg-violet/10 text-violet px-2 py-0.5 rounded">{topic.topic_type}</span>
+          <span className="text-[0.7rem] font-semibold uppercase tracking-wider bg-[#FEF3C7] text-[#92400E] px-[0.6em] py-[0.2em] rounded-full">{topic.topic_type}</span>
         )}
         {topic.labels.map((l) => (
-          <span key={l} className="text-xs bg-yellow/15 text-yellow-800 px-2 py-0.5 rounded">{l}</span>
+          <span key={l} className="text-xs font-medium px-3 py-1 rounded-full border border-border text-text-muted">{l}</span>
         ))}
         {topic.due_date && (
-          <span className="text-xs text-text-muted">
+          <span className="text-xs text-text-subtle">
             Deadline: {new Date(topic.due_date).toLocaleDateString('nl-NL')}
           </span>
         )}
       </div>
 
       <div className="ml-8 grid gap-6 lg:grid-cols-3">
-        {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
           {topic.description && (
-            <div className="bg-white rounded-lg shadow-sm border border-surface-dark p-4">
-              <p className="text-sm whitespace-pre-wrap">{topic.description}</p>
+            <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{topic.description}</p>
             </div>
           )}
 
-          {/* Comments */}
           <div>
-            <h2 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
+            <h2 className="text-sm font-heading font-bold mb-3 flex items-center gap-1.5">
               <MessageSquare size={16} /> Comments ({commentsList.length})
             </h2>
             <CommentThread
@@ -86,28 +81,21 @@ export default function TopicDetail() {
           </div>
         </div>
 
-        {/* Sidebar: viewpoints */}
         <div>
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
+          <h2 className="text-sm font-heading font-bold mb-3 flex items-center gap-1.5">
             <Eye size={16} /> Viewpoints ({vpList.length})
           </h2>
           {vpList.length === 0 ? (
-            <p className="text-xs text-text-muted">Geen viewpoints</p>
+            <p className="text-xs text-text-subtle">Geen viewpoints</p>
           ) : (
             <div className="space-y-3">
               {vpList.map((vp) => (
-                <ViewpointCard
-                  key={vp.guid}
-                  viewpoint={vp}
-                  projectId={projectId}
-                  topicId={topicId}
-                />
+                <ViewpointCard key={vp.guid} viewpoint={vp} projectId={projectId} topicId={topicId} />
               ))}
             </div>
           )}
 
-          {/* Topic details sidebar */}
-          <div className="mt-6 bg-white rounded-lg shadow-sm border border-surface-dark p-4 space-y-2 text-xs">
+          <div className="mt-6 bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-2 text-xs">
             <DetailRow label="Aangemaakt" value={new Date(topic.created_at).toLocaleString('nl-NL')} />
             <DetailRow label="Bijgewerkt" value={new Date(topic.updated_at).toLocaleString('nl-NL')} />
             {topic.stage && <DetailRow label="Fase" value={topic.stage} />}
@@ -122,7 +110,7 @@ export default function TopicDetail() {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <span className="text-text-muted">{label}</span>
+      <span className="text-text-subtle">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
   );

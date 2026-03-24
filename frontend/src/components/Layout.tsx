@@ -10,8 +10,10 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-violet text-white shadow-lg">
+      {/* Header — deep-forge navbar with amber gradient strip */}
+      <header className="bg-deep-forge text-white">
+        {/* Amber gradient accent strip */}
+        <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #D97706 0%, #F59E0B 40%, #EA580C 100%)' }} />
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -20,8 +22,10 @@ export default function Layout() {
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <Link to="/" className="font-bold text-lg tracking-tight flex items-center gap-2">
-              <span className="text-verdigris">BCF</span> Platform
+            <Link to="/" className="font-heading font-bold text-lg tracking-tight flex items-center gap-0.5">
+              <span className="text-white">Open</span>
+              <span className="text-amber">AEC</span>
+              <span className="text-scaffold-gray font-body font-normal text-sm ml-2">BCF Platform</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1 ml-6">
               <NavLink to="/" current={location.pathname} label="Projects" icon={<FolderOpen size={16} />} />
@@ -30,10 +34,10 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-white/80 hidden sm:block">{user.name}</span>
+                <span className="text-sm text-scaffold-gray hidden sm:block">{user.name}</span>
                 <button
                   onClick={logout}
-                  className="flex items-center gap-1 text-sm text-white/70 hover:text-white transition"
+                  className="flex items-center gap-1 text-sm text-scaffold-gray hover:text-white transition"
                 >
                   <LogOut size={16} />
                 </button>
@@ -41,7 +45,7 @@ export default function Layout() {
             ) : (
               <button
                 onClick={login}
-                className="flex items-center gap-1.5 text-sm bg-verdigris/20 hover:bg-verdigris/30 px-3 py-1.5 rounded transition"
+                className="flex items-center gap-1.5 text-sm bg-amber text-white px-3 py-1.5 rounded-[--radius-md] font-semibold hover:bg-signal-orange transition-all duration-150"
               >
                 <LogIn size={16} /> Login
               </button>
@@ -73,8 +77,8 @@ function NavLink({ to, current, label, icon, onClick }: {
     <Link
       to={to}
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition ${
-        active ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-sm] text-sm font-medium transition ${
+        active ? 'bg-amber text-white' : 'text-scaffold-gray hover:text-white hover:bg-white/10'
       }`}
     >
       {icon} {label}

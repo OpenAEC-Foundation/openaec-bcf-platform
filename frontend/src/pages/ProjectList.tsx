@@ -40,25 +40,24 @@ export default function ProjectList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Projecten</h1>
+        <h1 className="text-2xl">Projecten</h1>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 bg-verdigris text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-verdigris-light transition"
+          className="flex items-center gap-1.5 bg-amber text-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150"
         >
           <Plus size={16} /> Nieuw project
         </button>
       </div>
 
-      {/* Create form */}
       {showCreate && (
-        <form onSubmit={handleCreate} className="bg-white rounded-lg shadow-sm border border-surface-dark p-4 mb-6">
+        <form onSubmit={handleCreate} className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-6">
           <div className="grid gap-3">
             <input
               type="text"
               placeholder="Projectnaam"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border border-surface-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
+              className="border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
               autoFocus
             />
             <input
@@ -66,13 +65,13 @@ export default function ProjectList() {
               placeholder="Beschrijving (optioneel)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border border-surface-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-verdigris/40"
+              className="border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
             />
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowCreate(false)} className="px-3 py-1.5 text-sm text-text-muted hover:text-text transition">
+              <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2.5 text-sm text-text-muted hover:text-text transition">
                 Annuleren
               </button>
-              <button type="submit" disabled={creating || !name.trim()} className="bg-verdigris text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-verdigris-light transition disabled:opacity-50">
+              <button type="submit" disabled={creating || !name.trim()} className="bg-amber text-white px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
                 {creating ? 'Aanmaken...' : 'Aanmaken'}
               </button>
             </div>
@@ -80,7 +79,6 @@ export default function ProjectList() {
         </form>
       )}
 
-      {/* Project cards */}
       {items.length === 0 ? (
         <div className="text-center py-16 text-text-muted">
           <FolderOpen size={48} className="mx-auto mb-3 opacity-40" />
@@ -93,18 +91,18 @@ export default function ProjectList() {
             <Link
               key={p.project_id}
               to={`/projects/${p.project_id}`}
-              className="bg-white rounded-lg shadow-sm border border-surface-dark p-4 hover:shadow-md hover:border-verdigris/30 transition group"
+              className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 hover:shadow-[--shadow-md] hover:border-border-hover transition group"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-sm group-hover:text-verdigris transition">{p.name}</h3>
+                  <h3 className="font-heading font-bold text-sm group-hover:text-amber transition">{p.name}</h3>
                   {p.description && (
                     <p className="text-xs text-text-muted mt-1 line-clamp-2">{p.description}</p>
                   )}
                 </div>
-                <FolderOpen size={18} className="text-text-muted/40 group-hover:text-verdigris/60 transition shrink-0" />
+                <FolderOpen size={18} className="text-scaffold-gray/40 group-hover:text-amber/60 transition shrink-0" />
               </div>
-              <p className="text-xs text-text-muted mt-3">
+              <p className="text-xs text-text-subtle mt-3">
                 {new Date(p.updated_at).toLocaleDateString('nl-NL')}
               </p>
             </Link>

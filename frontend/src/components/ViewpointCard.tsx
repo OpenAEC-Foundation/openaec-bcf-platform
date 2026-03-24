@@ -12,9 +12,8 @@ export default function ViewpointCard({ viewpoint, projectId, topicId }: Props) 
   const snapshotUrl = viewpoints.snapshotUrl(projectId, topicId, viewpoint.guid);
 
   return (
-    <div className="bg-white rounded-lg border border-surface-dark overflow-hidden">
-      {/* Snapshot preview */}
-      <div className="aspect-video bg-surface-dark relative">
+    <div className="bg-white rounded-[--radius-lg] border border-border overflow-hidden">
+      <div className="aspect-video bg-concrete relative">
         <img
           src={snapshotUrl}
           alt="Viewpoint snapshot"
@@ -24,14 +23,12 @@ export default function ViewpointCard({ viewpoint, projectId, topicId }: Props) 
             (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
           }}
         />
-        <div className="hidden absolute inset-0 flex items-center justify-center text-text-muted/40">
+        <div className="hidden absolute inset-0 flex items-center justify-center text-scaffold-gray/40">
           <Camera size={32} />
         </div>
       </div>
-
-      {/* Camera info */}
       {viewpoint.camera && (
-        <div className="p-2.5 text-xs text-text-muted space-y-0.5">
+        <div className="p-3 text-xs text-text-muted space-y-0.5">
           <p className="font-medium text-text">
             {viewpoint.camera.camera_type === 'orthogonal' ? 'Orthografisch' : 'Perspectief'}
           </p>

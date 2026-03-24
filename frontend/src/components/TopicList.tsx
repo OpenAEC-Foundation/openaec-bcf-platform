@@ -31,31 +31,26 @@ export default function TopicList({ projectId, topics, onDelete }: Props) {
       {topics.map((t) => (
         <div
           key={t.guid}
-          className="flex items-center gap-3 bg-white rounded-lg border border-surface-dark px-4 py-3 hover:shadow-sm transition group"
+          className="flex items-center gap-3 bg-white rounded-[--radius-md] border border-border px-4 py-3 hover:shadow-[--shadow-sm] hover:border-border-hover transition group"
         >
-          <Link
-            to={`/projects/${projectId}/topics/${t.guid}`}
-            className="flex-1 min-w-0"
-          >
+          <Link to={`/projects/${projectId}/topics/${t.guid}`} className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="font-medium text-sm truncate group-hover:text-verdigris transition">
+              <span className="font-medium text-sm truncate group-hover:text-amber transition">
                 {t.title}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <StatusBadge value={t.topic_status} type="status" />
               <StatusBadge value={t.priority} type="priority" />
-              {t.topic_type && (
-                <span className="text-xs text-text-muted">{t.topic_type}</span>
-              )}
-              <span className="text-xs text-text-muted ml-auto">
+              {t.topic_type && <span className="text-xs text-text-subtle">{t.topic_type}</span>}
+              <span className="text-xs text-text-subtle ml-auto">
                 {new Date(t.updated_at).toLocaleDateString('nl-NL')}
               </span>
             </div>
           </Link>
           <button
             onClick={() => handleDelete(t.guid)}
-            className="p-1.5 text-text-muted/30 hover:text-peach transition opacity-0 group-hover:opacity-100"
+            className="p-1.5 text-scaffold-gray/30 hover:text-error transition opacity-0 group-hover:opacity-100"
             title="Verwijderen"
           >
             <Trash2 size={14} />
