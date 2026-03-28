@@ -7,6 +7,7 @@ import type {
   Viewpoint,
   ApiKey, ApiKeyCreated,
   ImportSummary, User,
+  Member, AddMember, ProjectStats,
 } from '../types/api';
 
 const BASE = '';
@@ -141,6 +142,66 @@ export const bcf = {
     return res.json();
   },
   exportUrl: (projectId: string) => `${BASE}/api/v1/projects/${projectId}/export-bcf`,
+};
+
+// --- Project Stats ---
+export const stats = {
+  get: (projectId: string) =>
+    request<ProjectStats>(`/api/v1/projects/${projectId}/stats`),
+};
+
+// --- Members ---
+export const members = {
+  list: (projectId: string) =>
+    request<Member[]>(`/api/v1/projects/${projectId}/members`),
+  add: (projectId: string, data: AddMember) =>
+    request<Member>(`/api/v1/projects/${projectId}/members`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateRole: (projectId: string, userId: string, role: string) =>
+    request<Member>(`/api/v1/projects/${projectId}/members/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    }),
+  remove: (projectId: string, userId: string) =>
+    request<void>(`/api/v1/projects/${projectId}/members/${userId}`, {
+      method: 'DELETE',
+    }),
+};
+
+// --- Users ---
+export const users = {
+  search: (q?: string) =>
+    request<User[]>(`/api/v1/users${q ? `?q=${encodeURIComponent(q)}` : ''}`),
+  create: (data: { email: string; name: string; password: string }) =>
+    request<User>('/api/v1/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
+// --- Image Upload ---
+export const projectImage = {
+  upload: async (projectId: string, file: File): Promise<Project> => {
+    const form = new FormData();
+    form.append('image', file);
+    const res = await fetch(`${BASE}/api/v1/projects/${projectId}/image`, {
+      method: 'PUT',
+      headers: {
+        ...(localStorage.getItem('bcf_token')
+          ? { Authorization: `Bearer ${localStorage.getItem('bcf_token')}` }
+          : {}),
+      },
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, body.error || res.statusText);
+    }
+    return res.json();
+  },
+  url: (projectId: string) => `${BASE}/api/v1/projects/${projectId}/image`,
 };
 
 // --- API Keys ---

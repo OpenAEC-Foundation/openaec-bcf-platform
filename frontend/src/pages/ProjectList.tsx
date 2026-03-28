@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FolderOpen, Plus } from 'lucide-react';
+import { FolderOpen, Plus, MapPin } from 'lucide-react';
 import { projects } from '../api/client';
 import type { Project } from '../types/api';
+
+const inputClass =
+  'border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]';
 
 export default function ProjectList() {
   const [items, setItems] = useState<Project[]>([]);
@@ -10,6 +13,7 @@ export default function ProjectList() {
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
   const [creating, setCreating] = useState(false);
 
   const load = () => {
@@ -23,9 +27,14 @@ export default function ProjectList() {
     if (!name.trim()) return;
     setCreating(true);
     try {
-      await projects.create({ name: name.trim(), description: description.trim() || undefined });
+      await projects.create({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        location: location.trim() || undefined,
+      });
       setName('');
       setDescription('');
+      setLocation('');
       setShowCreate(false);
       load();
     } finally {
@@ -57,7 +66,7 @@ export default function ProjectList() {
               placeholder="Projectnaam"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
+              className={inputClass}
               autoFocus
             />
             <input
@@ -65,7 +74,14 @@ export default function ProjectList() {
               placeholder="Beschrijving (optioneel)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
+              className={inputClass}
+            />
+            <input
+              type="text"
+              placeholder="Locatie (optioneel)"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className={inputClass}
             />
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2.5 text-sm text-text-muted hover:text-text transition">
@@ -86,25 +102,48 @@ export default function ProjectList() {
           <p className="text-sm">Maak een nieuw project aan of importeer een BCF bestand.</p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p) => (
             <Link
               key={p.project_id}
               to={`/projects/${p.project_id}`}
-              className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 hover:shadow-[--shadow-md] hover:border-border-hover transition group"
+              className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden hover:shadow-[--shadow-md] hover:border-border-hover transition group"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-heading font-bold text-sm group-hover:text-amber transition">{p.name}</h3>
-                  {p.description && (
-                    <p className="text-xs text-text-muted mt-1 line-clamp-2">{p.description}</p>
-                  )}
-                </div>
-                <FolderOpen size={18} className="text-scaffold-gray/40 group-hover:text-amber/60 transition shrink-0" />
+              {/* Project image */}
+              <div className="aspect-video bg-[#F5F5F4] flex items-center justify-center overflow-hidden">
+                {p.image_url ? (
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <FolderOpen size={40} className="text-scaffold-gray/30" />
+                )}
               </div>
-              <p className="text-xs text-text-subtle mt-3">
-                {new Date(p.updated_at).toLocaleDateString('nl-NL')}
-              </p>
+
+              {/* Project info */}
+              <div className="p-4">
+                <h3 className="font-heading font-bold text-sm group-hover:text-amber transition">
+                  {p.name}
+                </h3>
+                {p.location && (
+                  <p className="flex items-center gap-1 text-xs text-text-muted mt-1">
+                    <MapPin size={12} /> {p.location}
+                  </p>
+                )}
+                {p.description && (
+                  <p className="text-xs text-text-muted mt-1.5 line-clamp-2">
+                    {p.description}
+                  </p>
+                )}
+                <p className="text-xs text-text-subtle mt-3">
+                  {new Date(p.updated_at).toLocaleDateString('nl-NL')}
+                </p>
+              </div>
             </Link>
           ))}
         </div>

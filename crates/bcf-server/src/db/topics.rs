@@ -56,6 +56,60 @@ pub async fn list_topics(
   .await
 }
 
+/// Optional filters for listing topics.
+pub struct TopicFilters {
+  pub status: Option<String>,
+  pub priority: Option<String>,
+  pub assigned_to: Option<Uuid>,
+}
+
+/// List topics with optional filters.
+pub async fn list_topics_filtered(
+  pool: &PgPool,
+  project_id: Uuid,
+  filters: &TopicFilters,
+) -> Result<Vec<TopicRow>, sqlx::Error> {
+  let mut query = String::from(
+    "SELECT id, project_id, title, description, topic_type, topic_status,
+            priority, assigned_to, stage, labels, due_date,
+            creation_author, modified_author, index_number,
+            created_at, updated_at
+     FROM topics
+     WHERE project_id = $1",
+  );
+
+  let mut param_idx = 2u32;
+
+  if filters.status.is_some() {
+    query.push_str(&format!(" AND topic_status = ${param_idx}"));
+    param_idx += 1;
+  }
+  if filters.priority.is_some() {
+    query.push_str(&format!(" AND priority = ${param_idx}"));
+    param_idx += 1;
+  }
+  if filters.assigned_to.is_some() {
+    query.push_str(&format!(" AND assigned_to = ${param_idx}"));
+    // param_idx not needed after this
+  }
+
+  query.push_str(" ORDER BY created_at DESC");
+
+  let mut q = sqlx::query_as::<_, TopicRow>(&query).bind(project_id);
+
+  if let Some(ref status) = filters.status {
+    q = q.bind(status);
+  }
+  if let Some(ref priority) = filters.priority {
+    q = q.bind(priority);
+  }
+  if let Some(assigned) = filters.assigned_to {
+    q = q.bind(assigned);
+  }
+
+  q.fetch_all(pool).await
+}
+
 /// Get a single topic by ID within a project.
 pub async fn get_topic(
   pool: &PgPool,

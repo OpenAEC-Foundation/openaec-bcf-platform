@@ -6,6 +6,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   login: () => void;
+  loginLocal: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -13,6 +14,7 @@ const AuthContext = createContext<AuthState>({
   user: null,
   loading: true,
   login: () => {},
+  loginLocal: async () => {},
   logout: () => {},
 });
 
@@ -49,13 +51,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = auth.loginUrl();
   };
 
+  const loginLocal = async (email: string, password: string) => {
+    const res = await fetch('/auth/local/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || 'Login mislukt');
+    }
+    const data = await res.json();
+    localStorage.setItem('bcf_token', data.token);
+    setUser(data.user);
+  };
+
   const logout = () => {
     localStorage.removeItem('bcf_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginLocal, logout }}>
       {children}
     </AuthContext.Provider>
   );

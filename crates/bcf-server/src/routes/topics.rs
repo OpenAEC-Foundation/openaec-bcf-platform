@@ -2,14 +2,15 @@
 //!
 //! Nested under /bcf/2.1/projects/{project_id}/topics
 
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::routing::get;
 use axum::{Json, Router};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::auth::OptionalAuthUser;
 use crate::db;
-use crate::db::topics::{CreateTopicParams, UpdateTopicParams};
+use crate::db::topics::{CreateTopicParams, TopicFilters, UpdateTopicParams};
 use crate::error::{AppError, AppResult};
 use crate::models::topic::{CreateTopicRequest, TopicResponse, UpdateTopicRequest};
 use crate::state::AppState;
@@ -26,12 +27,26 @@ pub fn routes() -> Router<AppState> {
     .nest("/{topic_id}/viewpoints", viewpoints::routes())
 }
 
-/// GET /topics — List all topics for a project.
+/// Query parameters for filtering topics.
+#[derive(Debug, Deserialize)]
+struct TopicQueryParams {
+  status: Option<String>,
+  priority: Option<String>,
+  assigned_to: Option<Uuid>,
+}
+
+/// GET /topics — List topics for a project (with optional filters).
 async fn list_topics(
   State(state): State<AppState>,
   Path(project_id): Path<Uuid>,
+  Query(params): Query<TopicQueryParams>,
 ) -> AppResult<Json<Vec<TopicResponse>>> {
-  let rows = db::topics::list_topics(&state.pool, project_id).await?;
+  let filters = TopicFilters {
+    status: params.status,
+    priority: params.priority,
+    assigned_to: params.assigned_to,
+  };
+  let rows = db::topics::list_topics_filtered(&state.pool, project_id, &filters).await?;
   let topics: Vec<TopicResponse> = rows.into_iter().map(Into::into).collect();
   Ok(Json(topics))
 }

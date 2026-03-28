@@ -9,7 +9,7 @@ use uuid::Uuid;
 #[allow(dead_code)]
 pub struct UserRow {
   pub id: Uuid,
-  pub sub: String,
+  pub sub: Option<String>,
   pub email: String,
   pub name: String,
   pub avatar_url: Option<String>,

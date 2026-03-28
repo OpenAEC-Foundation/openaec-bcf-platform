@@ -4,6 +4,8 @@ export interface Project {
   project_id: string;
   name: string;
   description?: string;
+  location?: string;
+  image_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -11,6 +13,7 @@ export interface Project {
 export interface CreateProject {
   name: string;
   description?: string;
+  location?: string;
 }
 
 export interface Topic {
@@ -108,6 +111,36 @@ export interface User {
   email: string;
   name: string;
   avatar_url?: string;
+}
+
+// --- Members ---
+
+export interface Member {
+  user_id: string;
+  email: string;
+  name: string;
+  role: string;
+  created_at: string;
+}
+
+export interface AddMember {
+  user_id: string;
+  role: string;
+}
+
+// --- Project Stats ---
+
+export interface ProjectStats {
+  total: number;
+  open: number;
+  in_progress: number;
+  closed: number;
+  by_priority: PriorityCount[];
+}
+
+export interface PriorityCount {
+  priority: string;
+  count: number;
 }
 
 // --- Cloud Storage ---

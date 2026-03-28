@@ -2,6 +2,7 @@
 
 pub mod api_keys;
 pub mod comments;
+pub mod members;
 pub mod projects;
 pub mod topics;
 pub mod users;
