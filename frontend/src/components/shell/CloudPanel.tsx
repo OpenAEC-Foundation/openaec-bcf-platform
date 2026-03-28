@@ -7,7 +7,6 @@ import {
   cloudDownloadFile,
   cloudDeleteFile,
 } from '../../api/cloudApi';
-import { bcf } from '../../api/client';
 import type { CloudProject, CloudFile, CloudStatus } from '../../types/api';
 import { iconCloudUpload, iconCloudDownload } from './icons';
 
