@@ -7,6 +7,7 @@ use crate::state::AppState;
 pub mod api_keys;
 pub mod auth_routes;
 pub mod bcfio;
+pub mod cloud;
 pub mod comments;
 pub mod health;
 pub mod projects;
@@ -20,6 +21,7 @@ pub fn api_router() -> Router<AppState> {
     .merge(auth_routes::routes())
     .nest("/bcf/2.1", bcf_routes())
     .nest("/api/v1", platform_routes())
+    .nest("/api", cloud::routes())
 }
 
 /// BCF v2.1 standard-compliant routes.

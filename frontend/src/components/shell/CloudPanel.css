@@ -1,0 +1,214 @@
+.cloud-panel {
+  max-width: 600px;
+}
+
+.cloud-panel__title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--theme-text);
+  margin-bottom: 16px;
+}
+
+/* -- Mode selector ----------------------------- */
+.cloud-panel__modes {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.cloud-panel__mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 6px;
+  background: var(--theme-bg-lighter);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.cloud-panel__mode-btn:hover:not(:disabled) {
+  border-color: var(--theme-accent);
+  color: var(--theme-accent);
+}
+
+.cloud-panel__mode-btn--active {
+  border-color: var(--theme-accent);
+  background: var(--theme-accent-soft);
+  color: var(--theme-accent);
+}
+
+.cloud-panel__mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cloud-panel__mode-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.cloud-panel__mode-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* -- Sections ---------------------------------- */
+.cloud-panel__section {
+  margin-bottom: 16px;
+}
+
+.cloud-panel__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.cloud-panel__select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 4px;
+  background: var(--theme-bg-lighter);
+  color: var(--theme-text);
+  font-size: 13px;
+}
+
+.cloud-panel__select:focus {
+  outline: none;
+  border-color: var(--theme-accent);
+}
+
+/* -- File list --------------------------------- */
+.cloud-panel__file-list {
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cloud-panel__file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--theme-border-subtle);
+}
+
+.cloud-panel__file:last-child {
+  border-bottom: none;
+}
+
+.cloud-panel__file:hover {
+  background: var(--theme-hover-strong);
+}
+
+.cloud-panel__file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cloud-panel__file-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--theme-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-panel__file-meta {
+  font-size: 11px;
+  color: var(--theme-text-secondary);
+}
+
+.cloud-panel__file-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* -- Buttons ----------------------------------- */
+.cloud-panel__btn {
+  padding: 5px 12px;
+  border: 1px solid var(--theme-border-subtle);
+  border-radius: 4px;
+  background: var(--theme-bg-lighter);
+  color: var(--theme-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.cloud-panel__btn:hover:not(:disabled) {
+  border-color: var(--theme-accent);
+}
+
+.cloud-panel__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cloud-panel__btn--primary {
+  background: var(--theme-accent);
+  color: var(--theme-accent-text);
+  border-color: var(--theme-accent);
+}
+
+.cloud-panel__btn--primary:hover:not(:disabled) {
+  background: var(--theme-accent-hover);
+  border-color: var(--theme-accent-hover);
+}
+
+.cloud-panel__btn--danger {
+  color: #dc2626;
+}
+
+.cloud-panel__btn--danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.cloud-panel__btn--lg {
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+/* -- Feedback ---------------------------------- */
+.cloud-panel__muted {
+  font-size: 13px;
+  color: var(--theme-text-secondary);
+  padding: 8px 0;
+}
+
+.cloud-panel__error {
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: 8px;
+}
+
+.cloud-panel__success {
+  font-size: 13px;
+  color: #16a34a;
+  margin-top: 8px;
+}
+
+.cloud-panel__warning {
+  font-size: 13px;
+  color: #d97706;
+  margin-bottom: 8px;
+}

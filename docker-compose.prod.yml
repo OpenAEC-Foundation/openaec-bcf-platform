@@ -21,6 +21,9 @@ services:
       OIDC_REDIRECT_URI: "${OIDC_REDIRECT_URI:-}"
       JWT_SECRET: "${JWT_SECRET:-}"
       FRONTEND_URL: "${FRONTEND_URL:-https://bcf.open-aec.com}"
+      NEXTCLOUD_URL: "${NEXTCLOUD_URL:-}"
+      NEXTCLOUD_SERVICE_USER: "${NEXTCLOUD_SERVICE_USER:-}"
+      NEXTCLOUD_SERVICE_PASS: "${NEXTCLOUD_SERVICE_PASS:-}"
     volumes:
       - snapshot_data:/app/data/snapshots
     networks:

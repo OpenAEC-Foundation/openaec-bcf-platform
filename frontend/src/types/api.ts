@@ -109,3 +109,32 @@ export interface User {
   name: string;
   avatar_url?: string;
 }
+
+// --- Cloud Storage ---
+
+export interface CloudStatus {
+  enabled: boolean;
+  connected: boolean;
+}
+
+export interface CloudProject {
+  name: string;
+}
+
+export interface CloudFile {
+  name: string;
+  size: number;
+  last_modified: string;
+}
+
+export interface CloudUploadResponse {
+  success: boolean;
+  project: string;
+  filename: string;
+}
+
+export interface CloudSaveResponse {
+  success: boolean;
+  project: string;
+  filename: string;
+}

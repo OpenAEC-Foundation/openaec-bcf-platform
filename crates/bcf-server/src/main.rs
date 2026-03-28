@@ -11,6 +11,7 @@ mod models;
 mod routes;
 mod state;
 mod storage;
+mod webdav;
 
 use std::net::SocketAddr;
 
@@ -70,6 +71,13 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("auth disabled — running in open access mode");
     None
   };
+
+  // Log Nextcloud status
+  if config.nextcloud_enabled {
+    tracing::info!("nextcloud cloud storage enabled — {}", config.nextcloud_url.as_deref().unwrap_or("?"));
+  } else {
+    tracing::info!("nextcloud cloud storage disabled (env vars not set)");
+  }
 
   // Build application
   let state = AppState::new(pool, config.clone(), oidc_client);

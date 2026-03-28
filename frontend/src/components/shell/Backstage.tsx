@@ -1,20 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { brand } from '../../config/brand';
-import { iconImportBcf, iconExportBcf, iconSettings, iconAbout } from './icons';
+import { iconImportBcf, iconExportBcf, iconSettings, iconAbout, iconCloud } from './icons';
+import CloudPanel from './CloudPanel';
 import './Backstage.css';
+import './CloudPanel.css';
 
-type Panel = 'none' | 'about';
+type Panel = 'none' | 'about' | 'cloud';
 
 interface BackstageProps {
   open: boolean;
   onClose: () => void;
   onImportBcf?: () => void;
   onExportBcf?: () => void;
+  onImportFromCloud?: (file: File) => void;
+  projectId?: string;
+  projectName?: string;
 }
 
 const iconBack = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 
-export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: BackstageProps) {
+export default function Backstage({ open, onClose, onImportBcf, onExportBcf, onImportFromCloud, projectId, projectName }: BackstageProps) {
   const [activePanel, setActivePanel] = useState<Panel>('none');
 
   const handleKeyDown = useCallback(
@@ -72,6 +77,14 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
           <span className="backstage__item-shortcut">Ctrl+E</span>
         </button>
 
+        <button
+          className={`backstage__item ${activePanel === 'cloud' ? 'backstage__item--active' : ''}`}
+          onClick={() => setActivePanel(activePanel === 'cloud' ? 'none' : 'cloud')}
+        >
+          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconCloud }} />
+          <span className="backstage__item-label">Cloud opslag</span>
+        </button>
+
         <div className="backstage__divider" />
 
         <button className="backstage__item backstage__item--disabled">
@@ -96,6 +109,14 @@ export default function Backstage({ open, onClose, onImportBcf, onExportBcf }: B
       </div>
 
       <div className="backstage__panel">
+        {activePanel === 'cloud' && (
+          <CloudPanel
+            projectId={projectId}
+            projectName={projectName}
+            onImportFromCloud={onImportFromCloud}
+            onClose={onClose}
+          />
+        )}
         {activePanel === 'about' && (
           <div className="backstage__about">
             <div className="backstage__about-brand">

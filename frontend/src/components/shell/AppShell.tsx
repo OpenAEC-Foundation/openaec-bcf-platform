@@ -18,12 +18,19 @@ export default function AppShell({ children }: AppShellProps) {
   const params = useParams<{ projectId?: string }>();
   const [backstageOpen, setBackstageOpen] = useState(false);
   const [projectCount, setProjectCount] = useState<number | undefined>(undefined);
+  const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load project count for status bar
+  // Load project count for status bar + current project
   useEffect(() => {
-    projectsApi.list().then((list: Project[]) => setProjectCount(list.length)).catch(() => {});
-  }, []);
+    projectsApi.list().then((list: Project[]) => {
+      setProjectCount(list.length);
+      if (params.projectId) {
+        const proj = list.find((p) => p.project_id === params.projectId);
+        setCurrentProject(proj);
+      }
+    }).catch(() => {});
+  }, [params.projectId]);
 
   const handleNewProject = useCallback(() => {
     // Navigate to home and let ProjectList handle creation
@@ -56,6 +63,19 @@ export default function AppShell({ children }: AppShellProps) {
       window.open(bcf.exportUrl(params.projectId), '_blank');
     }
   }, [params.projectId]);
+
+  const handleImportFromCloud = useCallback(
+    async (file: File) => {
+      if (!params.projectId) return;
+      try {
+        await bcf.importZip(params.projectId, file);
+        window.location.reload();
+      } catch {
+        // Error is logged by API client
+      }
+    },
+    [params.projectId],
+  );
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -107,6 +127,9 @@ export default function AppShell({ children }: AppShellProps) {
         onClose={() => setBackstageOpen(false)}
         onImportBcf={handleImportBcf}
         onExportBcf={handleExportBcf}
+        onImportFromCloud={handleImportFromCloud}
+        projectId={params.projectId}
+        projectName={currentProject?.name}
       />
       {/* Hidden file input for BCF import */}
       <input

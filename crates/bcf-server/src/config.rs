@@ -21,6 +21,14 @@ pub struct Config {
   pub jwt_secret: String,
   /// Frontend URL to redirect to after OIDC callback.
   pub frontend_url: String,
+  /// Whether Nextcloud cloud storage is available.
+  pub nextcloud_enabled: bool,
+  /// Nextcloud base URL (e.g. `http://nextcloud:80`).
+  pub nextcloud_url: Option<String>,
+  /// Nextcloud service account username.
+  pub nextcloud_user: Option<String>,
+  /// Nextcloud service account app password.
+  pub nextcloud_pass: Option<String>,
 }
 
 impl Config {
@@ -62,6 +70,13 @@ impl Config {
     let frontend_url = std::env::var("FRONTEND_URL")
       .unwrap_or_else(|_| "http://localhost:5173".to_string());
 
+    // Nextcloud cloud storage (opt-in)
+    let nextcloud_url = std::env::var("NEXTCLOUD_URL").ok();
+    let nextcloud_user = std::env::var("NEXTCLOUD_SERVICE_USER").ok();
+    let nextcloud_pass = std::env::var("NEXTCLOUD_SERVICE_PASS").ok();
+    let nextcloud_enabled =
+      nextcloud_url.is_some() && nextcloud_user.is_some() && nextcloud_pass.is_some();
+
     // Validate: if auth is enabled, OIDC settings are required
     if auth_enabled {
       if oidc_issuer_url.is_none() {
@@ -90,6 +105,10 @@ impl Config {
       oidc_redirect_uri,
       jwt_secret,
       frontend_url,
+      nextcloud_enabled,
+      nextcloud_url,
+      nextcloud_user,
+      nextcloud_pass,
     })
   }
 }
