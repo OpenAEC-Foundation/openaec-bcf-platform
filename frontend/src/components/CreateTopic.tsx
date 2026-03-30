@@ -7,8 +7,8 @@ interface Props {
   onCreated: () => void;
 }
 
-const inputClass = "w-full border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
-const selectClass = "w-full border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-2.5 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
+const inputClass = "w-full border border-border rounded-[--radius-md] px-4 py-3 text-sm bg-concrete text-text placeholder:text-text-subtle focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
+const selectClass = "w-full border border-border rounded-[--radius-md] px-4 py-2.5 text-sm bg-concrete text-text focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]";
 
 export default function CreateTopic({ projectId, onCreated }: Props) {
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 bg-amber text-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 mb-4"
+        className="flex items-center gap-1.5 bg-amber text-deep-forge px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 mb-4"
       >
         <Plus size={16} /> Nieuw issue
       </button>
@@ -57,7 +57,7 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-4">
+    <form onSubmit={handleSubmit} className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-4">
       <div className="grid gap-3">
         <input type="text" placeholder="Issue titel" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} autoFocus />
         <textarea placeholder="Beschrijving (optioneel)" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputClass + " resize-y"} />
@@ -98,7 +98,7 @@ export default function CreateTopic({ projectId, onCreated }: Props) {
           <button type="button" onClick={() => setOpen(false)} className="px-4 py-2.5 text-sm text-text-muted hover:text-text transition">
             Annuleren
           </button>
-          <button type="submit" disabled={creating || !title.trim()} className="bg-amber text-white px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
+          <button type="submit" disabled={creating || !title.trim()} className="bg-amber text-deep-forge px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
             {creating ? 'Aanmaken...' : 'Aanmaken'}
           </button>
         </div>

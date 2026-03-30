@@ -29,6 +29,11 @@
 - Frontend CloudPanel bijgewerkt voor nieuwe structuur
 
 ### Frontend (OpenAEC ribbon UI -- volledig conform referentie)
+- **OpenAEC Design System:** Donker thema (#36363E), amber accent (#D97706), lichte tekst (#FAFAF9)
+- Shared package: `@openaec/ui` (tokens.css + components.css) geinstalleerd
+- Alle pagina-componenten gestyled met donkere achtergrond en amber-getinte borders
+- StatusBadge, KPI cards, forms, inputs, selects: volledig dark theme
+- Scrollbars met amber tint, select color-scheme: dark
 - AppBar (40px): brand wordmark, quick-access (Save, Settings), user menu
 - Ribbon (122px): animated tab indicator, slide-animaties bij tab switch
 - Tabs: Bestand (amber, Backstage), Start (Project/Issues/Acties), Beeld
@@ -36,7 +41,7 @@
 - StatusBar (22px): project/topic count, connectie-indicator
 - Keyboard shortcuts: Escape (sluit backstage), Ctrl+I (import), Ctrl+E (export)
 - Brand systeem: brand.ts + injectBrandStyles.ts (runtime CSS var injection)
-- Full themes.css: 150+ CSS vars, light + openaec dark theme
+- Full themes.css: 150+ CSS vars, dark theme als default
 - Design System v0.4: Space Grotesk, Inter, JetBrains Mono
 - Project CRUD, topic lijst/detail, comments, viewpoints, API keys
 - BCF ZIP import (drag & drop) en export (download)

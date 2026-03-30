@@ -51,7 +51,7 @@ export default function TopicDetail() {
 
       {/* Hero snapshot */}
       {heroSnapshot && (
-        <div className="mb-4 rounded-[--radius-lg] overflow-hidden border border-border bg-[#F5F5F4]">
+        <div className="mb-4 rounded-[--radius-lg] overflow-hidden border border-border bg-concrete">
           <img
             src={heroSnapshot}
             alt={topic.title}
@@ -66,7 +66,7 @@ export default function TopicDetail() {
         <StatusBadge value={topic.topic_status} type="status" />
         <StatusBadge value={topic.priority} type="priority" />
         {topic.topic_type && (
-          <span className="text-[0.7rem] font-semibold uppercase tracking-wider bg-[#FEF3C7] text-[#92400E] px-[0.6em] py-[0.2em] rounded-full">
+          <span className="text-[0.7rem] font-semibold uppercase tracking-wider px-[0.6em] py-[0.2em] rounded-full" style={{ background: 'var(--oaec-warning-soft, rgba(245,158,11,0.15))', color: 'var(--oaec-warning, #F59E0B)' }}>
             {topic.topic_type}
           </span>
         )}
@@ -81,9 +81,9 @@ export default function TopicDetail() {
         {/* Left column: description + comments */}
         <div className="lg:col-span-2 space-y-6">
           {topic.description && (
-            <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
+            <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
               <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Beschrijving</h2>
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{topic.description}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed text-text-muted">{topic.description}</p>
             </div>
           )}
 
@@ -103,7 +103,7 @@ export default function TopicDetail() {
         {/* Right column: metadata + viewpoints */}
         <div className="space-y-4">
           {/* All BCF metadata */}
-          <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-3 text-xs">
+          <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-3 text-xs">
             <h3 className="font-bold text-text-muted uppercase tracking-wider text-[0.7rem]">Issue details</h3>
             <DetailRow label="Status" value={topic.topic_status} />
             <DetailRow label="Prioriteit" value={topic.priority} />
@@ -128,7 +128,7 @@ export default function TopicDetail() {
           </div>
 
           {/* Timestamps */}
-          <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-2 text-xs">
+          <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-2 text-xs">
             <h3 className="font-bold text-text-muted uppercase tracking-wider text-[0.7rem]">Tijdstempels</h3>
             <DetailRow label="Aangemaakt" value={new Date(topic.created_at).toLocaleString('nl-NL')} />
             <DetailRow label="Bijgewerkt" value={new Date(topic.updated_at).toLocaleString('nl-NL')} />

@@ -12,7 +12,7 @@ export default function ViewpointCard({ viewpoint, projectId, topicId }: Props) 
   const snapshotUrl = viewpoints.snapshotUrl(projectId, topicId, viewpoint.guid);
 
   return (
-    <div className="bg-white rounded-[--radius-lg] border border-border overflow-hidden">
+    <div className="bg-deep-forge rounded-[--radius-lg] border border-border overflow-hidden">
       <div className="aspect-video bg-concrete relative">
         <img
           src={snapshotUrl}
@@ -23,7 +23,7 @@ export default function ViewpointCard({ viewpoint, projectId, topicId }: Props) 
             (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
           }}
         />
-        <div className="hidden absolute inset-0 flex items-center justify-center text-scaffold-gray/40">
+        <div className="hidden absolute inset-0 flex items-center justify-center text-text-subtle opacity-40">
           <Camera size={32} />
         </div>
       </div>

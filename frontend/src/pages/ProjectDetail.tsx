@@ -104,12 +104,12 @@ export default function ProjectDetail() {
           )}
         </div>
         {/* Image upload */}
-        <label className="shrink-0 w-20 h-20 rounded-[--radius-md] bg-[#F5F5F4] border border-border flex items-center justify-center overflow-hidden cursor-pointer hover:border-amber transition">
+        <label className="shrink-0 w-20 h-20 rounded-[--radius-md] bg-concrete border border-border flex items-center justify-center overflow-hidden cursor-pointer hover:border-amber transition">
           <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           {project.image_url ? (
             <img src={project.image_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <ImageIcon size={24} className="text-scaffold-gray/30" />
+            <ImageIcon size={24} className="text-text-subtle opacity-40" />
           )}
         </label>
       </div>
@@ -140,20 +140,20 @@ export default function ProjectDetail() {
             {/* KPI Cards */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-6">
               <KpiCard label="Totaal" value={dashStats.total} icon={<CircleDot size={20} />} color="text-text" />
-              <KpiCard label="Open" value={dashStats.open} icon={<AlertTriangle size={20} />} color="text-blue-600" />
+              <KpiCard label="Open" value={dashStats.open} icon={<AlertTriangle size={20} />} color="text-info" />
               <KpiCard label="In bewerking" value={dashStats.in_progress} icon={<Clock size={20} />} color="text-amber" />
-              <KpiCard label="Gesloten" value={dashStats.closed} icon={<CheckCircle2 size={20} />} color="text-green-600" />
+              <KpiCard label="Gesloten" value={dashStats.closed} icon={<CheckCircle2 size={20} />} color="text-success" />
             </div>
 
             {/* Priority breakdown */}
             {dashStats.by_priority.length > 0 && (
-              <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-6">
+              <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-6">
                 <h3 className="font-heading font-bold text-sm mb-3">Issues per prioriteit</h3>
                 <div className="space-y-2">
                   {dashStats.by_priority.map((bp) => (
                     <div key={bp.priority} className="flex items-center gap-3">
                       <StatusBadge value={bp.priority} type="priority" />
-                      <div className="flex-1 h-5 bg-[#F5F5F4] rounded overflow-hidden">
+                      <div className="flex-1 h-5 bg-concrete rounded overflow-hidden">
                         <div
                           className="h-full bg-amber rounded transition-all"
                           style={{
@@ -175,7 +175,7 @@ export default function ProjectDetail() {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="text-xs border border-border rounded px-2 py-1"
+                  className="text-xs border border-border rounded px-2 py-1 bg-concrete text-text"
                 >
                   <option value="">Alle statussen</option>
                   <option value="Open">Open</option>
@@ -185,7 +185,7 @@ export default function ProjectDetail() {
                 <select
                   value={filterPriority}
                   onChange={(e) => setFilterPriority(e.target.value)}
-                  className="text-xs border border-border rounded px-2 py-1"
+                  className="text-xs border border-border rounded px-2 py-1 bg-concrete text-text"
                 >
                   <option value="">Alle prioriteiten</option>
                   <option value="Critical">Kritiek</option>
@@ -218,7 +218,7 @@ export default function ProjectDetail() {
         {/* === IMPORT/EXPORT === */}
         {tab === 'import' && (
           <div className="max-w-lg space-y-4">
-            <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
+            <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
               <h3 className="font-heading font-bold text-sm mb-3 flex items-center gap-2">
                 <Upload size={16} /> BCF Importeren
               </h3>
@@ -233,24 +233,24 @@ export default function ProjectDetail() {
                   }}
                   disabled={importing}
                 />
-                <Upload size={32} className="mx-auto mb-2 text-scaffold-gray/40" />
+                <Upload size={32} className="mx-auto mb-2 text-text-subtle opacity-40" />
                 <p className="text-sm text-text-muted">
                   {importing ? 'Importeren...' : 'Klik of sleep een .bcfzip bestand'}
                 </p>
               </label>
               {importResult && (
-                <div className="mt-3 bg-[#F0FDF4] border-l-4 border-success rounded-[--radius-md] p-3 text-sm text-[#166534]">
+                <div className="mt-3 border-l-4 border-success rounded-[--radius-md] p-3 text-sm" style={{ background: 'var(--oaec-success-soft, rgba(22,163,74,0.15))', color: 'var(--oaec-success, #16A34A)' }}>
                   Geimporteerd: {importResult.topics_imported} issues, {importResult.comments_imported} comments, {importResult.viewpoints_imported} viewpoints
                 </div>
               )}
             </div>
-            <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
+            <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5">
               <h3 className="font-heading font-bold text-sm mb-3 flex items-center gap-2">
                 <Download size={16} /> BCF Exporteren
               </h3>
               <a
                 href={bcf.exportUrl(projectId)}
-                className="inline-flex items-center gap-1.5 bg-deep-forge text-blueprint-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-[#27272A] transition-all duration-150"
+                className="inline-flex items-center gap-1.5 bg-amber text-deep-forge px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150"
               >
                 <Download size={16} /> Download .bcfzip
               </a>
@@ -291,7 +291,7 @@ function KpiCard({ label, value, icon, color }: {
   label: string; value: number; icon: React.ReactNode; color: string;
 }) {
   return (
-    <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 flex items-center gap-3">
+    <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 flex items-center gap-3">
       <div className={`${color} opacity-60`}>{icon}</div>
       <div>
         <div className="text-2xl font-bold">{value}</div>
@@ -319,13 +319,13 @@ function IssueCard({ topic, projectId }: { topic: Topic; projectId: string }) {
   return (
     <Link
       to={`/projects/${projectId}/topics/${topic.guid}`}
-      className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden hover:shadow-[--shadow-md] hover:border-border-hover transition group"
+      className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden hover:shadow-[--shadow-md] hover:border-border-hover transition group"
     >
-      <div className="aspect-video bg-[#F5F5F4] flex items-center justify-center overflow-hidden">
+      <div className="aspect-video bg-concrete flex items-center justify-center overflow-hidden">
         {snapshotUrl ? (
           <img src={snapshotUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <CircleDot size={28} className="text-scaffold-gray/30" />
+          <CircleDot size={28} className="text-text-subtle opacity-40" />
         )}
       </div>
       <div className="p-3">

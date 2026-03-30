@@ -31,7 +31,7 @@ export default function TopicList({ projectId, topics, onDelete }: Props) {
       {topics.map((t) => (
         <div
           key={t.guid}
-          className="flex items-center gap-3 bg-white rounded-[--radius-md] border border-border px-4 py-3 hover:shadow-[--shadow-sm] hover:border-border-hover transition group"
+          className="flex items-center gap-3 bg-deep-forge rounded-[--radius-md] border border-border px-4 py-3 hover:shadow-[--shadow-sm] hover:border-border-hover transition group"
         >
           <Link to={`/projects/${projectId}/topics/${t.guid}`} className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -50,7 +50,7 @@ export default function TopicList({ projectId, topics, onDelete }: Props) {
           </Link>
           <button
             onClick={() => handleDelete(t.guid)}
-            className="p-1.5 text-scaffold-gray/30 hover:text-error transition opacity-0 group-hover:opacity-100"
+            className="p-1.5 text-text-subtle hover:text-error transition opacity-0 group-hover:opacity-100"
             title="Verwijderen"
           >
             <Trash2 size={14} />

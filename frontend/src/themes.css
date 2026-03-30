@@ -27,10 +27,10 @@
   --theme-file-tab-bg: #D97706;
   --theme-file-tab-hover: #EA580C;
   --theme-file-tab-text: #36363E;
-  --theme-content-bg: #FAFAF9;
+  --theme-content-bg: #2E2E36;
   --theme-placeholder-icon: rgba(217, 119, 6, 0.2);
-  --theme-placeholder-heading: rgba(54, 54, 62, 0.3);
-  --theme-placeholder-text: rgba(54, 54, 62, 0.25);
+  --theme-placeholder-heading: rgba(250, 250, 249, 0.3);
+  --theme-placeholder-text: rgba(250, 250, 249, 0.25);
   --theme-ribbon-btn-hover: rgba(217, 119, 6, 0.15);
   --theme-ribbon-btn-hover-border: rgba(217, 119, 6, 0.30);
   --theme-ribbon-btn-active-bg: rgba(217, 119, 6, 0.20);

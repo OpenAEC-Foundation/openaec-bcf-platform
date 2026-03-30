@@ -21,7 +21,7 @@
 - [ ] Input validatie (BCF constraints)
 - [ ] Test coverage
 - [ ] Conflict resolution bij concurrent edits
-- [ ] Dark mode (openaec thema) toggle in UI
+- [x] ~~Dark mode (openaec thema) toggle in UI~~ -- standaard dark theme actief via @openaec/ui
 - [ ] Ribbon responsive collapse
 - [ ] SettingsDialog (thema/taal)
 - [ ] WelcomeScreen

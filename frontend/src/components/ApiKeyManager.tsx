@@ -54,11 +54,11 @@ export default function ApiKeyManager({ projectId }: Props) {
   return (
     <div className="max-w-lg space-y-4">
       {newKey && (
-        <div className="bg-[#FFFBEB] border-l-4 border-amber rounded-[--radius-md] p-4">
-          <p className="text-sm font-semibold text-[#92400E] mb-2">API Key aangemaakt — kopieer deze nu!</p>
+        <div className="border-l-4 border-amber rounded-[--radius-md] p-4" style={{ background: 'var(--oaec-warning-soft, rgba(245,158,11,0.15))' }}>
+          <p className="text-sm font-semibold text-amber mb-2">API Key aangemaakt — kopieer deze nu!</p>
           <p className="text-xs text-text-muted mb-2">Deze key wordt maar een keer getoond.</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs font-mono bg-white border border-border rounded-[--radius-sm] px-2 py-1.5 break-all">
+            <code className="flex-1 text-xs font-mono bg-concrete border border-border rounded-[--radius-sm] px-2 py-1.5 break-all text-text">
               {newKey}
             </code>
             <button onClick={handleCopy} className="p-1.5 text-text-muted hover:text-amber transition" title="Kopiëren">
@@ -79,17 +79,17 @@ export default function ApiKeyManager({ projectId }: Props) {
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4">
+        <form onSubmit={handleCreate} className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4">
           <div className="flex gap-2">
             <input
               type="text"
               placeholder="Key naam (bijv. Validator, CI/CD)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="flex-1 border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-2.5 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
+              className="flex-1 border border-border rounded-[--radius-md] px-4 py-2.5 text-sm bg-concrete text-text placeholder:text-text-subtle focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
               autoFocus
             />
-            <button type="submit" disabled={creating || !name.trim()} className="bg-amber text-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
+            <button type="submit" disabled={creating || !name.trim()} className="bg-amber text-deep-forge px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
               {creating ? '...' : 'Aanmaken'}
             </button>
           </div>
@@ -103,7 +103,7 @@ export default function ApiKeyManager({ projectId }: Props) {
       ) : (
         <div className="space-y-2">
           {keys.map((k) => (
-            <div key={k.id} className="bg-white rounded-[--radius-md] border border-border px-4 py-3 flex items-center justify-between group">
+            <div key={k.id} className="bg-deep-forge rounded-[--radius-md] border border-border px-4 py-3 flex items-center justify-between group">
               <div>
                 <p className="text-sm font-medium">{k.name}</p>
                 <p className="text-xs text-text-subtle">
@@ -113,7 +113,7 @@ export default function ApiKeyManager({ projectId }: Props) {
                   {k.expires_at && <> · Verloopt {new Date(k.expires_at).toLocaleDateString('nl-NL')}</>}
                 </p>
               </div>
-              <button onClick={() => handleDelete(k.id)} className="p-1.5 text-scaffold-gray/30 hover:text-error transition opacity-0 group-hover:opacity-100" title="Intrekken">
+              <button onClick={() => handleDelete(k.id)} className="p-1.5 text-text-subtle hover:text-error transition opacity-0 group-hover:opacity-100" title="Intrekken">
                 <Trash2 size={14} />
               </button>
             </div>

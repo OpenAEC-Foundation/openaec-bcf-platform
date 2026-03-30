@@ -139,7 +139,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #A1A1AA;
+  color: var(--theme-text-muted);
   font-size: 13px;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .backstage__about-brand-prefix {
-  color: #36363E;
+  color: var(--theme-text);
 }
 
 .backstage__about-brand-accent {
@@ -168,30 +168,30 @@
   font-family: "Space Grotesk", system-ui, sans-serif;
   font-weight: 600;
   font-size: 18px;
-  color: #57534E;
+  color: var(--theme-text-secondary);
   margin-bottom: 4px;
 }
 
 .backstage__about-tagline {
   font-size: 13px;
-  color: #78716C;
+  color: var(--theme-text-muted);
   margin-bottom: 16px;
 }
 
 .backstage__about-separator {
   height: 1px;
-  background: #E7E5E4;
+  background: var(--theme-border-subtle);
   margin-bottom: 16px;
 }
 
 .backstage__about-text {
   font-size: 13px;
-  color: #57534E;
+  color: var(--theme-text-secondary);
   line-height: 1.6;
 }
 
 .backstage__about-version {
   margin-top: 16px;
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--theme-text-muted);
 }

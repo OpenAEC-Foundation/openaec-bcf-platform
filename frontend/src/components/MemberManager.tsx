@@ -16,7 +16,7 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const inputClass =
-  'border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-3 py-2 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]';
+  'border border-border rounded-[--radius-md] px-3 py-2 text-sm bg-concrete text-text placeholder:text-text-subtle focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]';
 
 export default function MemberManager({ projectId }: MemberManagerProps) {
   const [membersList, setMembers] = useState<Member[]>([]);
@@ -119,7 +119,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
         <h3 className="font-heading font-bold text-sm">Projectleden ({membersList.length})</h3>
         <button
           onClick={() => setShowAdd(!showAdd)}
-          className="flex items-center gap-1.5 bg-amber text-white px-3 py-2 rounded-[--radius-md] text-xs font-semibold hover:bg-signal-orange transition"
+          className="flex items-center gap-1.5 bg-amber text-deep-forge px-3 py-2 rounded-[--radius-md] text-xs font-semibold hover:bg-signal-orange transition"
         >
           <UserPlus size={14} /> Lid toevoegen
         </button>
@@ -127,7 +127,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
 
       {/* Add member form */}
       {showAdd && (
-        <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 mb-4 space-y-3">
+        <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 mb-4 space-y-3">
           {/* User search */}
           {!selectedUser ? (
             <div>
@@ -143,12 +143,12 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
                 />
               </div>
               {searchResults.length > 0 && (
-                <div className="mt-1 border border-border rounded-[--radius-md] max-h-40 overflow-y-auto">
+                <div className="mt-1 border border-border rounded-[--radius-md] max-h-40 overflow-y-auto bg-concrete">
                   {searchResults.map((u) => (
                     <button
                       key={u.user_id}
                       onClick={() => setSelectedUser(u)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-[#F5F5F4] transition flex justify-between"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-deep-forge transition flex justify-between"
                     >
                       <span className="font-medium">{u.name}</span>
                       <span className="text-text-muted">{u.email}</span>
@@ -164,7 +164,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between bg-[#F5F5F4] rounded px-3 py-2">
+            <div className="flex items-center justify-between bg-concrete rounded px-3 py-2">
               <div>
                 <span className="text-sm font-medium">{selectedUser.name}</span>
                 <span className="text-xs text-text-muted ml-2">{selectedUser.email}</span>
@@ -181,7 +181,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
               <input type="text" placeholder="Naam" value={newName} onChange={(e) => setNewName(e.target.value)} className={`${inputClass} w-full`} />
               <input type="email" placeholder="Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className={`${inputClass} w-full`} />
               <input type="password" placeholder="Wachtwoord (min. 8 tekens)" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={`${inputClass} w-full`} />
-              <button type="submit" className="bg-amber text-white px-4 py-2 rounded-[--radius-md] text-xs font-semibold hover:bg-signal-orange transition w-full">
+              <button type="submit" className="bg-amber text-deep-forge px-4 py-2 rounded-[--radius-md] text-xs font-semibold hover:bg-signal-orange transition w-full">
                 Gebruiker aanmaken
               </button>
             </form>
@@ -197,7 +197,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
               </select>
               <button
                 onClick={handleAddMember}
-                className="bg-amber text-white px-4 py-2 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition"
+                className="bg-amber text-deep-forge px-4 py-2 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition"
               >
                 Toevoegen
               </button>
@@ -210,9 +210,9 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
       {membersList.length === 0 ? (
         <p className="text-sm text-text-muted py-4">Geen leden toegevoegd aan dit project.</p>
       ) : (
-        <div className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden">
+        <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden">
           {membersList.map((m) => (
-            <div key={m.user_id} className="flex items-center justify-between px-4 py-3 border-b border-border last:border-b-0 hover:bg-[#FAFAF9] transition group">
+            <div key={m.user_id} className="flex items-center justify-between px-4 py-3 border-b border-border last:border-b-0 hover:bg-concrete transition group">
               <div>
                 <span className="text-sm font-medium">{m.name}</span>
                 <span className="text-xs text-text-muted ml-2">{m.email}</span>
@@ -221,7 +221,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
                 <select
                   value={m.role}
                   onChange={(e) => handleRoleChange(m.user_id, e.target.value)}
-                  className="text-xs border border-border rounded px-2 py-1 bg-transparent"
+                  className="text-xs border border-border rounded px-2 py-1 bg-concrete text-text"
                 >
                   {ROLES.map((r) => (
                     <option key={r} value={r}>{ROLE_LABELS[r]}</option>
@@ -229,7 +229,7 @@ export default function MemberManager({ projectId }: MemberManagerProps) {
                 </select>
                 <button
                   onClick={() => handleRemove(m.user_id, m.name)}
-                  className="text-text-muted hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
+                  className="text-text-muted hover:text-error opacity-0 group-hover:opacity-100 transition"
                 >
                   <Trash2 size={14} />
                 </button>

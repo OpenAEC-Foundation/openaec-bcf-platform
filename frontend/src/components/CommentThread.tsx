@@ -36,12 +36,12 @@ export default function CommentThread({ projectId, topicId, comments, onUpdate }
   return (
     <div className="space-y-3">
       {comments.map((c) => (
-        <div key={c.guid} className="bg-white rounded-[--radius-md] border border-border p-4 group">
+        <div key={c.guid} className="bg-deep-forge rounded-[--radius-md] border border-border p-4 group">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-sm whitespace-pre-wrap flex-1 leading-relaxed">{c.comment}</p>
+            <p className="text-sm whitespace-pre-wrap flex-1 leading-relaxed text-text-muted">{c.comment}</p>
             <button
               onClick={() => handleDelete(c.guid)}
-              className="p-1 text-scaffold-gray/30 hover:text-error transition opacity-0 group-hover:opacity-100 shrink-0"
+              className="p-1 text-text-subtle hover:text-error transition opacity-0 group-hover:opacity-100 shrink-0"
               title="Verwijderen"
             >
               <Trash2 size={12} />
@@ -59,12 +59,12 @@ export default function CommentThread({ projectId, topicId, comments, onUpdate }
           placeholder="Schrijf een comment..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="flex-1 border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-2.5 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
+          className="flex-1 border border-border rounded-[--radius-md] px-4 py-2.5 text-sm bg-concrete text-text placeholder:text-text-subtle focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]"
         />
         <button
           type="submit"
           disabled={sending || !text.trim()}
-          className="bg-amber text-white p-2.5 rounded-[--radius-md] hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-amber text-deep-forge p-2.5 rounded-[--radius-md] hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send size={16} />
         </button>

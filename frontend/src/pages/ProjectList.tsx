@@ -5,7 +5,7 @@ import { projects } from '../api/client';
 import type { Project } from '../types/api';
 
 const inputClass =
-  'border-[1.5px] border-[#D6D3D1] rounded-[--radius-md] px-4 py-3 text-sm focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]';
+  'w-full border border-border rounded-[--radius-md] px-4 py-3 text-sm bg-concrete text-text placeholder:text-text-subtle focus:outline-none focus:border-amber focus:shadow-[0_0_0_3px_rgba(217,119,6,0.15)]';
 
 export default function ProjectList() {
   const [items, setItems] = useState<Project[]>([]);
@@ -52,14 +52,14 @@ export default function ProjectList() {
         <h1 className="text-2xl">Projecten</h1>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 bg-amber text-white px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150"
+          className="flex items-center gap-1.5 bg-amber text-deep-forge px-4 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150"
         >
           <Plus size={16} /> Nieuw project
         </button>
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-6">
+        <form onSubmit={handleCreate} className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-5 mb-6">
           <div className="grid gap-3">
             <input
               type="text"
@@ -87,7 +87,7 @@ export default function ProjectList() {
               <button type="button" onClick={() => setShowCreate(false)} className="px-4 py-2.5 text-sm text-text-muted hover:text-text transition">
                 Annuleren
               </button>
-              <button type="submit" disabled={creating || !name.trim()} className="bg-amber text-white px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
+              <button type="submit" disabled={creating || !name.trim()} className="bg-amber text-deep-forge px-6 py-2.5 rounded-[--radius-md] text-sm font-semibold hover:bg-signal-orange transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed">
                 {creating ? 'Aanmaken...' : 'Aanmaken'}
               </button>
             </div>
@@ -107,10 +107,10 @@ export default function ProjectList() {
             <Link
               key={p.project_id}
               to={`/projects/${p.project_id}`}
-              className="bg-white rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden hover:shadow-[--shadow-md] hover:border-border-hover transition group"
+              className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border overflow-hidden hover:shadow-[--shadow-md] hover:border-border-hover transition group"
             >
               {/* Project image */}
-              <div className="aspect-video bg-[#F5F5F4] flex items-center justify-center overflow-hidden">
+              <div className="aspect-video bg-concrete flex items-center justify-center overflow-hidden">
                 {p.image_url ? (
                   <img
                     src={p.image_url}
@@ -121,7 +121,7 @@ export default function ProjectList() {
                     }}
                   />
                 ) : (
-                  <FolderOpen size={40} className="text-scaffold-gray/30" />
+                  <FolderOpen size={40} className="text-text-subtle opacity-40" />
                 )}
               </div>
 
