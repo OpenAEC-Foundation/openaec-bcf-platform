@@ -103,3 +103,16 @@ export function cloudSaveBcf(
     method: 'PUT',
   });
 }
+
+/** List IFC/BIM model files in a project's models/ directory. */
+export async function cloudListModels(project: string): Promise<CloudFile[]> {
+  const encoded = encodeURIComponent(project);
+  const res = await request<{ files: CloudFile[] }>(`/api/cloud/projects/${encoded}/models`);
+  return res.files;
+}
+
+/** Read the project manifest (project.wefc). */
+export async function cloudReadManifest(project: string): Promise<unknown> {
+  const encoded = encodeURIComponent(project);
+  return request<unknown>(`/api/cloud/projects/${encoded}/manifest`);
+}

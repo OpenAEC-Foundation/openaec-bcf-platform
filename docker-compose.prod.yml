@@ -12,7 +12,7 @@ services:
       DATABASE_URL: postgres://bcf:${POSTGRES_PASSWORD}@bcf-postgresql:5432/bcf_platform
       HOST: "0.0.0.0"
       PORT: "3000"
-      RUST_LOG: "bcf_server=info,tower_http=info"
+      RUST_LOG: "bcf_server=info,tower_http=info,openaec_cloud=info"
       STORAGE_PATH: /app/data/snapshots
       AUTH_ENABLED: "${AUTH_ENABLED:-false}"
       OIDC_ISSUER_URL: "${OIDC_ISSUER_URL:-}"
@@ -21,11 +21,17 @@ services:
       OIDC_REDIRECT_URI: "${OIDC_REDIRECT_URI:-}"
       JWT_SECRET: "${JWT_SECRET:-}"
       FRONTEND_URL: "${FRONTEND_URL:-https://bcf.open-aec.com}"
+      # Cloud storage — multi-tenant (preferred)
+      TENANTS_CONFIG: "${TENANTS_CONFIG:-/etc/openaec/tenants.json}"
+      DEFAULT_TENANT: "${DEFAULT_TENANT:-}"
+      NC_SERVICE_PASS_3BM: "${NC_SERVICE_PASS_3BM:-}"
+      # Cloud storage — legacy single-tenant (fallback)
       NEXTCLOUD_URL: "${NEXTCLOUD_URL:-}"
       NEXTCLOUD_SERVICE_USER: "${NEXTCLOUD_SERVICE_USER:-}"
       NEXTCLOUD_SERVICE_PASS: "${NEXTCLOUD_SERVICE_PASS:-}"
     volumes:
       - snapshot_data:/app/data/snapshots
+      - /opt/openaec/tenants.json:/etc/openaec/tenants.json:ro
     networks:
       - bcf-net
       - openaec_platform

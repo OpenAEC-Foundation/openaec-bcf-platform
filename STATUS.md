@@ -1,20 +1,34 @@
-# STATUS — OpenAEC BCF Platform
+# STATUS -- OpenAEC BCF Platform
 
-> Laatste update: 2026-03-24
+> Laatste update: 2026-03-30
 
 ## Overzicht Fases
 
 | Fase | Omschrijving | Status |
 |------|-------------|--------|
-| **1** | Foundation (Rust/Axum, PostgreSQL, basis API) | ✅ Done |
-| **2** | Viewpoint CRUD + snapshot storage | ✅ Done |
-| **3** | BCF ZIP import/export | ✅ Done |
-| **4** | Authenticatie (Authentik OIDC + API keys) | ✅ Done |
-| **5** | Frontend (React 18, TypeScript, Vite, Tailwind) | ✅ Done |
+| **1** | Foundation (Rust/Axum, PostgreSQL, basis API) | Done |
+| **2** | Viewpoint CRUD + snapshot storage | Done |
+| **3** | BCF ZIP import/export | Done |
+| **4** | Authenticatie (Authentik OIDC + API keys) | Done |
+| **5** | Frontend (React 18, TypeScript, Vite, Tailwind) | Done |
+| **6** | Cloud migratie naar openaec-cloud crate | Done |
 
 ## Wat werkt
 
-### Frontend (OpenAEC ribbon UI — volledig conform referentie)
+### Cloud Storage (openaec-cloud crate integratie)
+- Gedeelde `openaec-cloud` crate als git dependency
+- Multi-tenant support via `tenants.json` (TENANTS_CONFIG env var)
+- Backward compatibility: legacy single-tenant env vars (NEXTCLOUD_URL etc.)
+- Hybrid I/O: volume mount reads (snel) + WebDAV writes (NC in sync)
+- Nieuw pad: `Projects/{project}/issues/` (was: `99_overige_documenten/bcf-platform/`)
+- Automatische fallback: leest eerst nieuw pad, dan legacy pad
+- Schrijft altijd naar nieuw pad (`issues/`)
+- Models endpoint: `GET /api/cloud/projects/{project}/models` (IFC bestanden uit `models/`)
+- Manifest endpoint: `GET /api/cloud/projects/{project}/manifest` (project.wefc)
+- Bij BCF save naar cloud: automatische manifest update met WefcIssueSet object
+- Frontend CloudPanel bijgewerkt voor nieuwe structuur
+
+### Frontend (OpenAEC ribbon UI -- volledig conform referentie)
 - AppBar (40px): brand wordmark, quick-access (Save, Settings), user menu
 - Ribbon (122px): animated tab indicator, slide-animaties bij tab switch
 - Tabs: Bestand (amber, Backstage), Start (Project/Issues/Acties), Beeld
@@ -40,7 +54,7 @@
 - JIT user provisioning
 
 ### Infrastructuur
-- Docker Compose met auth env vars
+- Docker Compose met auth + cloud env vars
 - Multi-stage Dockerfile (Node + Rust)
 - Caddy reverse proxy
 - Live op https://bcf.open-aec.com

@@ -61,6 +61,14 @@ sqlx migrate run --source migrations
 
 ---
 
+## Agent Broker
+- **project_id:** `bcf-platform`
+- **display_name:** `BCF Platform`
+- **capabilities:** `["bcf-issues", "rust", "axum"]`
+- **subscriptions:** `["bim/*", "shared/*"]`
+
+---
+
 ## Orchestrator
 
 Bij sessie START → lees `X:\10_3BM_bouwkunde\50_Claude-Code-Projects\lessons_learned_global.md`

@@ -12,6 +12,9 @@ path = "src/main.rs"
 [dependencies]
 bcf-core = { path = "../bcf-core" }
 
+# Cloud storage (shared Nextcloud library)
+openaec-cloud = { git = "https://github.com/OpenAEC-Foundation/openaec-cloud.git" }
+
 # Web framework
 axum = { version = "0.8", features = ["multipart"] }
 tokio = { version = "1", features = ["full"] }
@@ -43,9 +46,6 @@ rand = "0.9"
 reqwest = { version = "0.12", features = ["json"] }
 sha2 = "0.10"
 urlencoding = "2"
-
-# XML (WebDAV PROPFIND parsing)
-quick-xml = { version = "0.37" }
 
 # Error handling
 thiserror = { workspace = true }

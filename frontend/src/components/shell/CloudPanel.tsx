@@ -200,7 +200,7 @@ export default function CloudPanel({
           {selectedProject && (
             <div className="cloud-panel__section">
               <label className="cloud-panel__label">
-                Bestanden in {selectedProject}/bcf-platform/
+                Bestanden in {selectedProject}/issues/
               </label>
               {files.length === 0 ? (
                 <p className="cloud-panel__muted">Geen bestanden gevonden</p>

@@ -1,6 +1,6 @@
-# TODO — OpenAEC BCF Platform
+# TODO -- OpenAEC BCF Platform
 
-> Laatste update: 2026-03-24
+> Laatste update: 2026-03-30
 
 ## Korte termijn
 
@@ -10,6 +10,8 @@
 - [ ] OIDC token refresh flow
 - [ ] i18n (NL/EN taalwisseling)
 - [ ] Koppeling BIM Validator via API keys
+- [ ] Cloud: volume mount toevoegen aan docker-compose voor snelle reads
+- [ ] Cloud: model-koppeling in BCF save (WefcIssueSet.models vullen)
 
 ## Backlog
 

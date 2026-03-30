@@ -72,14 +72,13 @@ async fn main() -> anyhow::Result<()> {
     None
   };
 
-  // Log Nextcloud status
-  if config.nextcloud_enabled {
-    tracing::info!("nextcloud cloud storage enabled — {}", config.nextcloud_url.as_deref().unwrap_or("?"));
-  } else {
-    tracing::info!("nextcloud cloud storage disabled (env vars not set)");
-  }
+  // Log cloud storage config
+  tracing::info!(
+    cloud_enabled = config.cloud_enabled,
+    "cloud storage config loaded"
+  );
 
-  // Build application
+  // Build application (cloud client initialized here)
   let state = AppState::new(pool, config.clone(), oidc_client);
 
   let cors = CorsLayer::new()
