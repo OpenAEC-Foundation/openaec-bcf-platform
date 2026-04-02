@@ -33,7 +33,7 @@ export default function ViewpointCard({ viewpoint, projectId, topicId }: Props) 
             {viewpoint.camera.camera_type === 'orthogonal' ? 'Orthografisch' : 'Perspectief'}
           </p>
           <p>
-            Positie: ({viewpoint.camera.x.toFixed(1)}, {viewpoint.camera.y.toFixed(1)}, {viewpoint.camera.z.toFixed(1)})
+            Positie: ({viewpoint.camera.position.x.toFixed(1)}, {viewpoint.camera.position.y.toFixed(1)}, {viewpoint.camera.position.z.toFixed(1)})
           </p>
         </div>
       )}

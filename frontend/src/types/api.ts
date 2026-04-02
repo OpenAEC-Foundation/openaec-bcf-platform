@@ -69,19 +69,19 @@ export interface Viewpoint {
   creation_date: string;
 }
 
-export interface Camera {
-  camera_type: string;
+export interface CameraVector {
   x: number;
   y: number;
   z: number;
-  dir_x: number;
-  dir_y: number;
-  dir_z: number;
-  up_x: number;
-  up_y: number;
-  up_z: number;
-  fov: number | null;
-  aspect: number | null;
+}
+
+export interface Camera {
+  camera_type: string;
+  position: CameraVector;
+  direction: CameraVector;
+  up: CameraVector;
+  field_of_view: number | null;
+  aspect_ratio: number | null;
 }
 
 export interface ApiKey {
