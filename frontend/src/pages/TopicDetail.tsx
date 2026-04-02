@@ -36,7 +36,9 @@ export default function TopicDetail() {
   if (!topic || !projectId || !topicId) return <div className="text-text-muted py-12 text-center">Issue niet gevonden</div>;
 
   // First viewpoint snapshot as hero image
-  const heroSnapshot = vpList.length > 0 ? vpList[0].snapshot_url : null;
+  const heroSnapshot = vpList.length > 0 && vpList[0].has_snapshot
+    ? vpApi.snapshotUrl(projectId, topicId, vpList[0].guid)
+    : null;
 
   return (
     <div>

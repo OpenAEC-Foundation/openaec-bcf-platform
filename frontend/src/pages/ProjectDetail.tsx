@@ -309,8 +309,10 @@ function IssueCard({ topic, projectId }: { topic: Topic; projectId: string }) {
     viewpointsApi
       .list(projectId, topic.guid)
       .then((vps) => {
-        if (vps.length > 0 && vps[0].snapshot_url) {
-          setSnapshotUrl(vps[0].snapshot_url);
+        if (vps.length > 0 && vps[0].has_snapshot) {
+          setSnapshotUrl(
+            viewpointsApi.snapshotUrl(projectId, topic.guid, vps[0].guid)
+          );
         }
       })
       .catch(() => {});

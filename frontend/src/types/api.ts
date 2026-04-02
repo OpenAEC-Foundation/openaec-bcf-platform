@@ -64,11 +64,10 @@ export interface CreateComment {
 
 export interface Viewpoint {
   guid: string;
-  topic_id: string;
-  snapshot_url: string | null;
+  has_snapshot: boolean;
   camera: Camera | null;
   components: unknown | null;
-  created_at: string;
+  creation_date: string;
 }
 
 export interface Camera {
