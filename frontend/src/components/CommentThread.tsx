@@ -48,7 +48,7 @@ export default function CommentThread({ projectId, topicId, comments, onUpdate }
             </button>
           </div>
           <p className="text-xs text-text-subtle mt-2">
-            {new Date(c.created_at).toLocaleString('nl-NL')}
+            {new Date(c.date).toLocaleString('nl-NL')}
           </p>
         </div>
       ))}

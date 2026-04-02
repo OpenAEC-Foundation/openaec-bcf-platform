@@ -31,8 +31,8 @@ export interface Topic {
   index: number | null;
   creation_author: string | null;
   modified_author: string | null;
-  created_at: string;
-  updated_at: string;
+  creation_date: string;
+  modified_date: string;
 }
 
 export interface CreateTopic {
@@ -49,12 +49,11 @@ export interface CreateTopic {
 
 export interface Comment {
   guid: string;
-  topic_id: string;
   author_id: string | null;
   comment: string;
   viewpoint_guid: string | null;
-  created_at: string;
-  updated_at: string;
+  date: string;
+  modified_date: string;
 }
 
 export interface CreateComment {

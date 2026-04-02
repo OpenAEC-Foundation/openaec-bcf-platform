@@ -44,7 +44,7 @@ export default function TopicList({ projectId, topics, onDelete }: Props) {
               <StatusBadge value={t.priority} type="priority" />
               {t.topic_type && <span className="text-xs text-text-subtle">{t.topic_type}</span>}
               <span className="text-xs text-text-subtle ml-auto">
-                {new Date(t.updated_at).toLocaleDateString('nl-NL')}
+                {new Date(t.modified_date).toLocaleDateString('nl-NL')}
               </span>
             </div>
           </Link>

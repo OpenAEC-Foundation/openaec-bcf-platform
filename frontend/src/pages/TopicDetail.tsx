@@ -132,8 +132,8 @@ export default function TopicDetail() {
           {/* Timestamps */}
           <div className="bg-deep-forge rounded-[--radius-lg] shadow-[--shadow-sm] border border-border p-4 space-y-2 text-xs">
             <h3 className="font-bold text-text-muted uppercase tracking-wider text-[0.7rem]">Tijdstempels</h3>
-            <DetailRow label="Aangemaakt" value={new Date(topic.created_at).toLocaleString('nl-NL')} />
-            <DetailRow label="Bijgewerkt" value={new Date(topic.updated_at).toLocaleString('nl-NL')} />
+            <DetailRow label="Aangemaakt" value={new Date(topic.creation_date).toLocaleString('nl-NL')} />
+            <DetailRow label="Bijgewerkt" value={new Date(topic.modified_date).toLocaleString('nl-NL')} />
             {topic.creation_author && <DetailRow label="Auteur" value={topic.creation_author} />}
           </div>
 
