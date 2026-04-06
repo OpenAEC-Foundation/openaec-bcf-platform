@@ -200,6 +200,13 @@ export interface WefcManifest {
   data: WefcDataObject[];
 }
 
+/** Info about a .wefc manifest file (from list_manifests). */
+export interface ManifestInfo {
+  name: string;
+  size: number;
+  last_modified: string;
+}
+
 /** A WefcIssueSet is what BCF Platform writes to the manifest. */
 export interface WefcIssueSet extends WefcDataObject {
   type: 'WefcIssueSet';

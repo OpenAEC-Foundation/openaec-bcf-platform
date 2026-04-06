@@ -8,11 +8,13 @@
 //! DELETE /api/cloud/projects/{project}/files/{filename}  -- delete file
 //! GET    /api/cloud/projects/{project}/models            -- list IFC models
 //! PUT    /api/cloud/projects/{project}/save/{project_id} -- export BCF to cloud
-//! GET    /api/cloud/projects/{project}/manifest          -- read project manifest
-//! PUT    /api/cloud/projects/{project}/manifest          -- merge-update project manifest
+//! GET    /api/cloud/projects/{project}/manifest          -- read project manifest (default or named)
+//! PUT    /api/cloud/projects/{project}/manifest          -- merge-update project manifest (default or named)
+//! GET    /api/cloud/projects/{project}/manifests         -- list all .wefc manifests
+//! GET    /api/cloud/projects/{project}/manifests/{name}  -- read a specific manifest by name
 
 use axum::body::Body;
-use axum::extract::{Multipart, Path, State};
+use axum::extract::{Multipart, Path, Query, State};
 use axum::http::{header, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::{get, put};
@@ -47,6 +49,14 @@ pub fn routes() -> Router<AppState> {
         .route(
             "/cloud/projects/{project}/manifest",
             get(cloud_read_manifest).put(cloud_write_manifest),
+        )
+        .route(
+            "/cloud/projects/{project}/manifests",
+            get(cloud_list_manifests),
+        )
+        .route(
+            "/cloud/projects/{project}/manifests/{name}",
+            get(cloud_read_manifest_by_name),
         )
 }
 
@@ -329,10 +339,10 @@ async fn cloud_save_bcf(
         .upload_file(&project_name, &filename, zip_bytes)
         .await?;
 
-    // Read existing manifest to find WefcModel references and existing IssueSet guid
+    // Read existing default manifest to find WefcModel references and existing IssueSet guid
     let issue_path = format!("issues/{filename}");
     let (model_refs, existing_guid, existing_created) =
-        match client.read_manifest(&project_name).await {
+        match client.read_default_manifest(&project_name).await {
             Ok(Some(manifest)) => {
                 // Convert to serde_json::Value for inspection
                 let manifest_json = serde_json::to_value(&manifest).unwrap_or_default();
@@ -363,7 +373,7 @@ async fn cloud_save_bcf(
 
     // Best-effort manifest update (don't fail the save if manifest update fails)
     if let Err(e) = client
-        .upsert_manifest_object(&project_name, issue_set_object)
+        .upsert_default_manifest_object(&project_name, issue_set_object)
         .await
     {
         tracing::warn!(
@@ -380,16 +390,31 @@ async fn cloud_save_bcf(
     }))
 }
 
+/// Optional query parameters for manifest endpoints.
+#[derive(Deserialize)]
+struct ManifestQuery {
+    /// Manifest file name (default: `"project.wefc"`).
+    manifest_name: Option<String>,
+}
+
 /// GET /api/cloud/projects/{project}/manifest
 ///
-/// Read the project manifest (`project.wefc`) as JSON.
+/// Read a project manifest as JSON. Accepts an optional `manifest_name`
+/// query parameter to read a specific manifest (defaults to `"project.wefc"`).
 async fn cloud_read_manifest(
     State(state): State<AppState>,
     Path(project): Path<String>,
+    Query(query): Query<ManifestQuery>,
 ) -> AppResult<Json<serde_json::Value>> {
     let client = require_cloud(&state)?;
 
-    match client.read_manifest(&project).await? {
+    let manifest_opt = if let Some(ref name) = query.manifest_name {
+        client.read_manifest(&project, name).await?
+    } else {
+        client.read_default_manifest(&project).await?
+    };
+
+    match manifest_opt {
         Some(manifest) => {
             let json = serde_json::to_value(&manifest)
                 .map_err(|e| AppError::Internal(format!("manifest serialize: {e}")))?;
@@ -399,6 +424,62 @@ async fn cloud_read_manifest(
             "header": null,
             "data": []
         }))),
+    }
+}
+
+/// A manifest list entry for the API response.
+#[derive(Serialize)]
+struct ManifestEntry {
+    name: String,
+    size: u64,
+    last_modified: String,
+}
+
+/// Response wrapper for manifest list.
+#[derive(Serialize)]
+struct ManifestListResponse {
+    manifests: Vec<ManifestEntry>,
+}
+
+/// GET /api/cloud/projects/{project}/manifests
+///
+/// List all `.wefc` manifest files in a project directory.
+async fn cloud_list_manifests(
+    State(state): State<AppState>,
+    Path(project): Path<String>,
+) -> AppResult<Json<ManifestListResponse>> {
+    let client = require_cloud(&state)?;
+
+    let infos = client.list_manifests(&project).await?;
+    let manifests = infos
+        .into_iter()
+        .map(|m| ManifestEntry {
+            name: m.name,
+            size: m.size,
+            last_modified: m.last_modified,
+        })
+        .collect();
+    Ok(Json(ManifestListResponse { manifests }))
+}
+
+/// GET /api/cloud/projects/{project}/manifests/{name}
+///
+/// Read a specific manifest by name.
+async fn cloud_read_manifest_by_name(
+    State(state): State<AppState>,
+    Path((project, name)): Path<(String, String)>,
+) -> AppResult<Json<serde_json::Value>> {
+    let client = require_cloud(&state)?;
+
+    match client.read_manifest(&project, &name).await? {
+        Some(manifest) => {
+            let json = serde_json::to_value(&manifest)
+                .map_err(|e| AppError::Internal(format!("manifest serialize: {e}")))?;
+            Ok(Json(json))
+        }
+        None => Err(AppError::NotFound(format!(
+            "manifest '{name}' not found in project '{project}'"
+        ))),
     }
 }
 
@@ -494,33 +575,37 @@ struct ManifestUpsertRequest {
 
 /// PUT /api/cloud/projects/{project}/manifest
 ///
-/// Merge-update: upsert a single data object into the project manifest.
+/// Merge-update: upsert a single data object into a project manifest.
+/// Accepts an optional `manifest_name` query parameter (defaults to `"project.wefc"`).
 /// Preserves all objects not owned by this tool. Updates existing objects
 /// matched by `guid`, adds new ones. Updates the manifest header timestamp.
 ///
-/// BCF Platform does NOT create `project.wefc` — it only updates an existing one.
+/// BCF Platform does NOT create manifests — it only updates existing ones.
 /// Returns 404 if no manifest exists yet.
 async fn cloud_write_manifest(
     State(state): State<AppState>,
     Path(project): Path<String>,
+    Query(query): Query<ManifestQuery>,
     Json(body): Json<ManifestUpsertRequest>,
 ) -> AppResult<Json<serde_json::Value>> {
     let client = require_cloud(&state)?;
 
+    let manifest_name = query.manifest_name.as_deref().unwrap_or("project.wefc");
+
     // Verify manifest exists — BCF Platform never creates one
-    let existing = client.read_manifest(&project).await?;
+    let existing = client.read_manifest(&project, manifest_name).await?;
     if existing.is_none() {
-        return Err(AppError::NotFound(
-            "project.wefc manifest does not exist — cannot update".to_string(),
-        ));
+        return Err(AppError::NotFound(format!(
+            "manifest '{manifest_name}' does not exist — cannot update"
+        )));
     }
 
     client
-        .upsert_manifest_object(&project, body.object)
+        .upsert_manifest_object(&project, manifest_name, body.object)
         .await?;
 
     // Return the updated manifest
-    match client.read_manifest(&project).await? {
+    match client.read_manifest(&project, manifest_name).await? {
         Some(manifest) => {
             let json = serde_json::to_value(&manifest)
                 .map_err(|e| AppError::Internal(format!("manifest serialize: {e}")))?;

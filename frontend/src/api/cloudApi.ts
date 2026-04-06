@@ -7,6 +7,7 @@ import type {
   CloudFile,
   CloudUploadResponse,
   CloudSaveResponse,
+  ManifestInfo,
   WefcManifest,
 } from '../types/api';
 
@@ -112,11 +113,29 @@ export async function cloudListModels(project: string): Promise<CloudFile[]> {
   return res.files;
 }
 
-/** Read the project manifest (project.wefc). Returns null if no manifest exists. */
-export async function cloudReadManifest(project: string): Promise<WefcManifest | null> {
+/** List all .wefc manifest files in a project. */
+export async function cloudListManifests(project: string): Promise<ManifestInfo[]> {
   const encoded = encodeURIComponent(project);
+  const res = await request<{ manifests: ManifestInfo[] }>(
+    `/api/cloud/projects/${encoded}/manifests`,
+  );
+  return res.manifests;
+}
+
+/**
+ * Read a project manifest. Returns null if no manifest exists.
+ * @param name — manifest file name (default: reads `project.wefc`)
+ */
+export async function cloudReadManifest(
+  project: string,
+  name?: string,
+): Promise<WefcManifest | null> {
+  const encoded = encodeURIComponent(project);
+  const qs = name ? `?manifest_name=${encodeURIComponent(name)}` : '';
   try {
-    const manifest = await request<WefcManifest>(`/api/cloud/projects/${encoded}/manifest`);
+    const manifest = await request<WefcManifest>(
+      `/api/cloud/projects/${encoded}/manifest${qs}`,
+    );
     // If header is null, no manifest exists on disk
     if (!manifest.header) return null;
     return manifest;
@@ -126,13 +145,18 @@ export async function cloudReadManifest(project: string): Promise<WefcManifest |
   }
 }
 
-/** Upsert a single data object into the project manifest. */
+/**
+ * Upsert a single data object into a project manifest.
+ * @param name — manifest file name (default: `project.wefc`)
+ */
 export async function cloudWriteManifest(
   project: string,
   object: Record<string, unknown>,
+  name?: string,
 ): Promise<WefcManifest> {
   const encoded = encodeURIComponent(project);
-  return request<WefcManifest>(`/api/cloud/projects/${encoded}/manifest`, {
+  const qs = name ? `?manifest_name=${encodeURIComponent(name)}` : '';
+  return request<WefcManifest>(`/api/cloud/projects/${encoded}/manifest${qs}`, {
     method: 'PUT',
     body: JSON.stringify({ object }),
   });

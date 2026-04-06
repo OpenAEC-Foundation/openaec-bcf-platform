@@ -13,7 +13,7 @@ path = "src/main.rs"
 bcf-core = { path = "../bcf-core" }
 
 # Cloud storage (shared Nextcloud library)
-openaec-cloud = { git = "https://github.com/OpenAEC-Foundation/openaec-cloud.git" }
+openaec-cloud = { git = "https://github.com/OpenAEC-Foundation/openaec-files.git" }
 
 # Web framework
 axum = { version = "0.8", features = ["multipart"] }

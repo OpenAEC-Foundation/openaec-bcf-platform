@@ -7,11 +7,13 @@ import {
   cloudDownloadFile,
   cloudDeleteFile,
   cloudReadManifest,
+  cloudListManifests,
 } from '../../api/cloudApi';
 import type {
   CloudProject,
   CloudFile,
   CloudStatus,
+  ManifestInfo,
   WefcManifest,
   WefcIssueSet,
   WefcModel,
@@ -42,6 +44,8 @@ export default function CloudPanel({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmOverwrite, setConfirmOverwrite] = useState<string | null>(null);
+  const [manifestList, setManifestList] = useState<ManifestInfo[]>([]);
+  const [selectedManifest, setSelectedManifest] = useState<string | null>(null);
   const [manifest, setManifest] = useState<WefcManifest | null>(null);
   const [manifestLoading, setManifestLoading] = useState(false);
 
@@ -71,17 +75,37 @@ export default function CloudPanel({
     }
   }, [selectedProject]);
 
-  // Load manifest when a project is selected (for manifest-aware open)
+  // Load manifest list when a project is selected (for manifest-aware open)
   useEffect(() => {
     if (selectedProject) {
+      setManifestList([]);
+      setSelectedManifest(null);
       setManifest(null);
       setManifestLoading(true);
-      cloudReadManifest(selectedProject)
+      cloudListManifests(selectedProject)
+        .then((list) => {
+          setManifestList(list);
+          // Auto-select if exactly one manifest
+          if (list.length === 1) {
+            setSelectedManifest(list[0].name);
+          }
+        })
+        .catch(() => setManifestList([]))
+        .finally(() => setManifestLoading(false));
+    }
+  }, [selectedProject]);
+
+  // Load specific manifest content when a manifest is selected
+  useEffect(() => {
+    if (selectedProject && selectedManifest) {
+      setManifest(null);
+      setManifestLoading(true);
+      cloudReadManifest(selectedProject, selectedManifest)
         .then(setManifest)
         .catch(() => setManifest(null))
         .finally(() => setManifestLoading(false));
     }
-  }, [selectedProject]);
+  }, [selectedProject, selectedManifest]);
 
   const handleSave = useCallback(async () => {
     if (!selectedProject || !projectId) return;
@@ -218,17 +242,37 @@ export default function CloudPanel({
             </select>
           </div>
 
+          {/* Manifest selector — shown when opening and multiple manifests are available */}
+          {selectedProject && mode === 'open' && manifestList.length > 1 && (
+            <div className="cloud-panel__section">
+              <label className="cloud-panel__label">Manifest</label>
+              <select
+                className="cloud-panel__select"
+                value={selectedManifest || ''}
+                onChange={(e) => setSelectedManifest(e.target.value || null)}
+              >
+                <option value="">Kies een manifest...</option>
+                {manifestList.map((m) => (
+                  <option key={m.name} value={m.name}>
+                    {m.name} ({formatSize(m.size)})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* File list — manifest-aware when opening */}
           {selectedProject && mode === 'open' && manifest && !manifestLoading && (
             <ManifestFileList
               manifest={manifest}
+              manifestName={selectedManifest}
               loading={loading}
               onOpen={handleOpen}
             />
           )}
 
-          {/* Fallback file list — no manifest or save mode */}
-          {selectedProject && (mode === 'save' || (!manifest && !manifestLoading)) && (
+          {/* Fallback file list — no manifests found, or save mode */}
+          {selectedProject && (mode === 'save' || (manifestList.length === 0 && !manifestLoading)) && (
             <div className="cloud-panel__section">
               <label className="cloud-panel__label">
                 Bestanden in {selectedProject}/issues/
@@ -274,7 +318,9 @@ export default function CloudPanel({
           {/* Loading manifest indicator */}
           {selectedProject && mode === 'open' && manifestLoading && (
             <div className="cloud-panel__section">
-              <p className="cloud-panel__muted">Project manifest laden...</p>
+              <p className="cloud-panel__muted">
+                {selectedManifest ? `${selectedManifest} laden...` : 'Manifests zoeken...'}
+              </p>
             </div>
           )}
 
@@ -308,10 +354,12 @@ export default function CloudPanel({
 /** Manifest-aware file list: shows WefcIssueSet objects and linked models. */
 function ManifestFileList({
   manifest,
+  manifestName,
   loading,
   onOpen,
 }: {
   manifest: WefcManifest;
+  manifestName: string | null;
   loading: boolean;
   onOpen: (filename: string) => void;
 }) {
@@ -334,7 +382,9 @@ function ManifestFileList({
       {/* BCF Issue Sets */}
       {issueSets.length > 0 && (
         <div className="cloud-panel__section">
-          <label className="cloud-panel__label">BCF bestanden (manifest)</label>
+          <label className="cloud-panel__label">
+            BCF bestanden{manifestName ? ` (${manifestName})` : ' (manifest)'}
+          </label>
           <div className="cloud-panel__file-list">
             {issueSets.map((issueSet) => {
               const linkedModels = resolveModelNames(issueSet.models, models);
