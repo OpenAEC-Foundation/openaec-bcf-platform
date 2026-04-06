@@ -7,6 +7,7 @@ import type {
   CloudFile,
   CloudUploadResponse,
   CloudSaveResponse,
+  WefcManifest,
 } from '../types/api';
 
 const BASE = '';
@@ -111,8 +112,28 @@ export async function cloudListModels(project: string): Promise<CloudFile[]> {
   return res.files;
 }
 
-/** Read the project manifest (project.wefc). */
-export async function cloudReadManifest(project: string): Promise<unknown> {
+/** Read the project manifest (project.wefc). Returns null if no manifest exists. */
+export async function cloudReadManifest(project: string): Promise<WefcManifest | null> {
   const encoded = encodeURIComponent(project);
-  return request<unknown>(`/api/cloud/projects/${encoded}/manifest`);
+  try {
+    const manifest = await request<WefcManifest>(`/api/cloud/projects/${encoded}/manifest`);
+    // If header is null, no manifest exists on disk
+    if (!manifest.header) return null;
+    return manifest;
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  }
+}
+
+/** Upsert a single data object into the project manifest. */
+export async function cloudWriteManifest(
+  project: string,
+  object: Record<string, unknown>,
+): Promise<WefcManifest> {
+  const encoded = encodeURIComponent(project);
+  return request<WefcManifest>(`/api/cloud/projects/${encoded}/manifest`, {
+    method: 'PUT',
+    body: JSON.stringify({ object }),
+  });
 }

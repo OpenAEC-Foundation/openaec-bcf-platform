@@ -169,3 +169,46 @@ export interface CloudSaveResponse {
   project: string;
   filename: string;
 }
+
+// --- WEFC Project Manifest ---
+
+export interface WefcHeader {
+  schema: string;
+  schemaVersion: string;
+  fileId: string;
+  timestamp: string;
+  application: string;
+  applicationVersion: string;
+}
+
+/** A WEFC data object — flexible, type-discriminated. */
+export interface WefcDataObject {
+  type: string;
+  guid: string;
+  name: string;
+  path?: string;
+  version?: string;
+  status?: string;
+  created?: string;
+  modified?: string;
+  models?: string[];
+  [key: string]: unknown;
+}
+
+export interface WefcManifest {
+  header: WefcHeader | null;
+  data: WefcDataObject[];
+}
+
+/** A WefcIssueSet is what BCF Platform writes to the manifest. */
+export interface WefcIssueSet extends WefcDataObject {
+  type: 'WefcIssueSet';
+  path: string;
+  models: string[];
+}
+
+/** A WefcModel represents an IFC model referenced in the manifest. */
+export interface WefcModel extends WefcDataObject {
+  type: 'WefcModel';
+  path: string;
+}

@@ -9,6 +9,7 @@
 //! GET    /api/cloud/projects/{project}/models            -- list IFC models
 //! PUT    /api/cloud/projects/{project}/save/{project_id} -- export BCF to cloud
 //! GET    /api/cloud/projects/{project}/manifest          -- read project manifest
+//! PUT    /api/cloud/projects/{project}/manifest          -- merge-update project manifest
 
 use axum::body::Body;
 use axum::extract::{Multipart, Path, State};
@@ -16,7 +17,7 @@ use axum::http::{header, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::{get, put};
 use axum::{Json, Router};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use std::sync::Arc;
@@ -45,7 +46,7 @@ pub fn routes() -> Router<AppState> {
         )
         .route(
             "/cloud/projects/{project}/manifest",
-            get(cloud_read_manifest),
+            get(cloud_read_manifest).put(cloud_write_manifest),
         )
 }
 
@@ -328,18 +329,36 @@ async fn cloud_save_bcf(
         .upload_file(&project_name, &filename, zip_bytes)
         .await?;
 
-    // Update project.wefc manifest with a WefcIssueSet object
+    // Read existing manifest to find WefcModel references and existing IssueSet guid
+    let issue_path = format!("issues/{filename}");
+    let (model_refs, existing_guid, existing_created) =
+        match client.read_manifest(&project_name).await {
+            Ok(Some(manifest)) => {
+                // Convert to serde_json::Value for inspection
+                let manifest_json = serde_json::to_value(&manifest).unwrap_or_default();
+                let refs = extract_model_refs(&manifest_json);
+                let (guid, created) = find_existing_issue_set(&manifest_json, &issue_path);
+                (refs, guid, created)
+            }
+            _ => (vec![], None, None),
+        };
+
+    // Reuse existing guid if updating, generate new one if creating
+    let guid = existing_guid.unwrap_or_else(|| Uuid::new_v4().to_string());
     let now = chrono::Utc::now().to_rfc3339();
+    let created = existing_created.unwrap_or_else(|| now.clone());
+
+    // Update project.wefc manifest with a WefcIssueSet object
     let issue_set_object = serde_json::json!({
         "type": "WefcIssueSet",
-        "guid": Uuid::new_v4().to_string(),
+        "guid": guid,
         "name": project.name,
         "version": "1.0.0",
         "status": "active",
-        "created": now,
+        "created": created,
         "modified": now,
-        "path": format!("issues/{filename}"),
-        "models": []
+        "path": issue_path,
+        "models": model_refs
     });
 
     // Best-effort manifest update (don't fail the save if manifest update fails)
@@ -465,6 +484,117 @@ async fn generate_bcfzip(state: &AppState, project_id: Uuid) -> AppResult<Vec<u8
 
     bcf_core::bcfzip::write_bcfzip(&archive)
         .map_err(|e| AppError::Internal(format!("BCF ZIP generation failed: {e}")))
+}
+
+/// Request body for PUT /manifest — a single WEFC data object to upsert.
+#[derive(Deserialize)]
+struct ManifestUpsertRequest {
+    object: serde_json::Value,
+}
+
+/// PUT /api/cloud/projects/{project}/manifest
+///
+/// Merge-update: upsert a single data object into the project manifest.
+/// Preserves all objects not owned by this tool. Updates existing objects
+/// matched by `guid`, adds new ones. Updates the manifest header timestamp.
+///
+/// BCF Platform does NOT create `project.wefc` — it only updates an existing one.
+/// Returns 404 if no manifest exists yet.
+async fn cloud_write_manifest(
+    State(state): State<AppState>,
+    Path(project): Path<String>,
+    Json(body): Json<ManifestUpsertRequest>,
+) -> AppResult<Json<serde_json::Value>> {
+    let client = require_cloud(&state)?;
+
+    // Verify manifest exists — BCF Platform never creates one
+    let existing = client.read_manifest(&project).await?;
+    if existing.is_none() {
+        return Err(AppError::NotFound(
+            "project.wefc manifest does not exist — cannot update".to_string(),
+        ));
+    }
+
+    client
+        .upsert_manifest_object(&project, body.object)
+        .await?;
+
+    // Return the updated manifest
+    match client.read_manifest(&project).await? {
+        Some(manifest) => {
+            let json = serde_json::to_value(&manifest)
+                .map_err(|e| AppError::Internal(format!("manifest serialize: {e}")))?;
+            Ok(Json(json))
+        }
+        None => Ok(Json(serde_json::json!({
+            "header": null,
+            "data": []
+        }))),
+    }
+}
+
+/// Find an existing WefcIssueSet in the manifest by its `path` field.
+///
+/// Returns (guid, created) if found, so we can update rather than duplicate.
+fn find_existing_issue_set(
+    manifest: &serde_json::Value,
+    path: &str,
+) -> (Option<String>, Option<String>) {
+    let empty = vec![];
+    let data = manifest
+        .get("data")
+        .and_then(|d| d.as_array())
+        .unwrap_or(&empty);
+
+    for obj in data {
+        let is_issue_set = obj
+            .get("type")
+            .and_then(|t| t.as_str())
+            .map(|t| t == "WefcIssueSet")
+            .unwrap_or(false);
+        let matches_path = obj
+            .get("path")
+            .and_then(|p| p.as_str())
+            .map(|p| p == path)
+            .unwrap_or(false);
+
+        if is_issue_set && matches_path {
+            let guid = obj.get("guid").and_then(|g| g.as_str()).map(String::from);
+            let created = obj
+                .get("created")
+                .and_then(|c| c.as_str())
+                .map(String::from);
+            return (guid, created);
+        }
+    }
+
+    (None, None)
+}
+
+/// Extract `wefc://` model references from a manifest's WefcModel objects.
+///
+/// Scans the manifest `data` array for objects of type `WefcModel` and
+/// returns their GUIDs formatted as `wefc://<guid>` references.
+fn extract_model_refs(manifest: &serde_json::Value) -> Vec<serde_json::Value> {
+    let empty = vec![];
+    let data = manifest
+        .get("data")
+        .and_then(|d| d.as_array())
+        .unwrap_or(&empty);
+
+    data.iter()
+        .filter(|obj| {
+            obj.get("type")
+                .and_then(|t| t.as_str())
+                .map(|t| t == "WefcModel")
+                .unwrap_or(false)
+        })
+        .filter_map(|obj| {
+            obj.get("guid")
+                .and_then(|g| g.as_str())
+                .map(|guid| serde_json::json!(format!("wefc://{guid}")))
+        })
+        .collect()
 }
 
 /// Extract the CloudClient from state, returning 503 if not configured.

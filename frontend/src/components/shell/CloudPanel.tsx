@@ -6,8 +6,16 @@ import {
   cloudSaveBcf,
   cloudDownloadFile,
   cloudDeleteFile,
+  cloudReadManifest,
 } from '../../api/cloudApi';
-import type { CloudProject, CloudFile, CloudStatus } from '../../types/api';
+import type {
+  CloudProject,
+  CloudFile,
+  CloudStatus,
+  WefcManifest,
+  WefcIssueSet,
+  WefcModel,
+} from '../../types/api';
 import { iconCloudUpload, iconCloudDownload } from './icons';
 
 interface CloudPanelProps {
@@ -34,6 +42,8 @@ export default function CloudPanel({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmOverwrite, setConfirmOverwrite] = useState<string | null>(null);
+  const [manifest, setManifest] = useState<WefcManifest | null>(null);
+  const [manifestLoading, setManifestLoading] = useState(false);
 
   // Load cloud status on mount
   useEffect(() => {
@@ -58,6 +68,18 @@ export default function CloudPanel({
       cloudListFiles(selectedProject)
         .then(setFiles)
         .catch(() => {});
+    }
+  }, [selectedProject]);
+
+  // Load manifest when a project is selected (for manifest-aware open)
+  useEffect(() => {
+    if (selectedProject) {
+      setManifest(null);
+      setManifestLoading(true);
+      cloudReadManifest(selectedProject)
+        .then(setManifest)
+        .catch(() => setManifest(null))
+        .finally(() => setManifestLoading(false));
     }
   }, [selectedProject]);
 
@@ -196,8 +218,17 @@ export default function CloudPanel({
             </select>
           </div>
 
-          {/* File list */}
-          {selectedProject && (
+          {/* File list — manifest-aware when opening */}
+          {selectedProject && mode === 'open' && manifest && !manifestLoading && (
+            <ManifestFileList
+              manifest={manifest}
+              loading={loading}
+              onOpen={handleOpen}
+            />
+          )}
+
+          {/* Fallback file list — no manifest or save mode */}
+          {selectedProject && (mode === 'save' || (!manifest && !manifestLoading)) && (
             <div className="cloud-panel__section">
               <label className="cloud-panel__label">
                 Bestanden in {selectedProject}/issues/
@@ -240,6 +271,13 @@ export default function CloudPanel({
             </div>
           )}
 
+          {/* Loading manifest indicator */}
+          {selectedProject && mode === 'open' && manifestLoading && (
+            <div className="cloud-panel__section">
+              <p className="cloud-panel__muted">Project manifest laden...</p>
+            </div>
+          )}
+
           {/* Save button */}
           {mode === 'save' && selectedProject && (
             <div className="cloud-panel__section">
@@ -265,6 +303,129 @@ export default function CloudPanel({
       {success && <p className="cloud-panel__success">{success}</p>}
     </div>
   );
+}
+
+/** Manifest-aware file list: shows WefcIssueSet objects and linked models. */
+function ManifestFileList({
+  manifest,
+  loading,
+  onOpen,
+}: {
+  manifest: WefcManifest;
+  loading: boolean;
+  onOpen: (filename: string) => void;
+}) {
+  const issueSets = getIssueSets(manifest);
+  const models = getModels(manifest);
+
+  if (issueSets.length === 0 && models.length === 0) {
+    return (
+      <div className="cloud-panel__section">
+        <label className="cloud-panel__label">Project manifest</label>
+        <p className="cloud-panel__muted">
+          Geen BCF bestanden gevonden in het project manifest.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* BCF Issue Sets */}
+      {issueSets.length > 0 && (
+        <div className="cloud-panel__section">
+          <label className="cloud-panel__label">BCF bestanden (manifest)</label>
+          <div className="cloud-panel__file-list">
+            {issueSets.map((issueSet) => {
+              const linkedModels = resolveModelNames(issueSet.models, models);
+              // Extract filename from path (e.g. "issues/project.bcfzip" -> "project.bcfzip")
+              const filename = issueSet.path?.split('/').pop() ?? issueSet.name;
+              return (
+                <div key={issueSet.guid} className="cloud-panel__file">
+                  <div className="cloud-panel__file-info">
+                    <span className="cloud-panel__file-name">{issueSet.name}</span>
+                    <span className="cloud-panel__file-meta">
+                      {issueSet.path}
+                      {issueSet.modified && ` \u00B7 ${new Date(issueSet.modified).toLocaleDateString()}`}
+                    </span>
+                    {linkedModels.length > 0 && (
+                      <span className="cloud-panel__file-meta">
+                        Modellen: {linkedModels.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="cloud-panel__file-actions">
+                    <button
+                      className="cloud-panel__btn cloud-panel__btn--primary"
+                      onClick={() => onOpen(filename)}
+                      disabled={loading}
+                    >
+                      Importeren
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Referenced models (read-only metadata) */}
+      {models.length > 0 && (
+        <div className="cloud-panel__section">
+          <label className="cloud-panel__label">Gekoppelde modellen</label>
+          <div className="cloud-panel__file-list">
+            {models.map((model) => (
+              <div key={model.guid} className="cloud-panel__file">
+                <div className="cloud-panel__file-info">
+                  <span className="cloud-panel__file-name">{model.name}</span>
+                  <span className="cloud-panel__file-meta">
+                    {model.path}
+                    {model.modified && ` \u00B7 ${new Date(model.modified).toLocaleDateString()}`}
+                  </span>
+                </div>
+                <div className="cloud-panel__file-actions">
+                  <span className="cloud-panel__muted" style={{ fontSize: '11px' }}>
+                    Alleen metadata
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Extract WefcIssueSet objects from manifest data. */
+function getIssueSets(manifest: WefcManifest | null): WefcIssueSet[] {
+  if (!manifest?.data) return [];
+  return manifest.data.filter(
+    (obj): obj is WefcIssueSet => obj.type === 'WefcIssueSet',
+  );
+}
+
+/** Extract WefcModel objects from manifest data. */
+function getModels(manifest: WefcManifest | null): WefcModel[] {
+  if (!manifest?.data) return [];
+  return manifest.data.filter(
+    (obj): obj is WefcModel => obj.type === 'WefcModel',
+  );
+}
+
+/** Resolve wefc:// references to model names. */
+function resolveModelNames(
+  refs: string[] | undefined,
+  models: WefcModel[],
+): string[] {
+  if (!refs || refs.length === 0) return [];
+  return refs
+    .map((ref) => {
+      const guid = ref.replace('wefc://', '');
+      const model = models.find((m) => m.guid === guid);
+      return model?.name ?? guid;
+    });
 }
 
 function formatSize(bytes: number): string {
