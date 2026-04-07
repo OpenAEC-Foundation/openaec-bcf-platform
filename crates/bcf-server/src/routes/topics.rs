@@ -16,6 +16,7 @@ use crate::models::topic::{CreateTopicRequest, TopicResponse, UpdateTopicRequest
 use crate::state::AppState;
 
 use super::comments;
+use super::events;
 use super::viewpoints;
 
 /// Topic routes (nested under projects/{project_id}/topics).
@@ -25,6 +26,7 @@ pub fn routes() -> Router<AppState> {
     .route("/{topic_id}", get(get_topic).put(update_topic).delete(delete_topic))
     .nest("/{topic_id}/comments", comments::routes())
     .nest("/{topic_id}/viewpoints", viewpoints::routes())
+    .nest("/{topic_id}/events", events::topic_event_routes())
 }
 
 /// Query parameters for filtering topics.

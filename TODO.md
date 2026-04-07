@@ -1,6 +1,6 @@
 # TODO -- OpenAEC BCF Platform
 
-> Laatste update: 2026-03-30
+> Laatste update: 2026-04-07
 
 ## Korte termijn
 
@@ -16,8 +16,8 @@
 ## Backlog
 
 - [ ] Role-based access control op routes
-- [ ] Event/audit log endpoints
-- [ ] Project extensions endpoints (custom types/statuses/priorities)
+- [x] ~~Event/audit log endpoints~~ -- topic + project events geïmplementeerd
+- [x] ~~Project extensions endpoints (custom types/statuses/priorities)~~ -- auto-create defaults bij eerste GET
 - [ ] Input validatie (BCF constraints)
 - [ ] Test coverage
 - [ ] Conflict resolution bij concurrent edits

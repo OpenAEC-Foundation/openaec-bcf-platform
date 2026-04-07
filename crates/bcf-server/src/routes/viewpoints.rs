@@ -26,6 +26,9 @@ pub fn routes() -> Router<AppState> {
       get(get_viewpoint).put(update_viewpoint).delete(delete_viewpoint),
     )
     .route("/{viewpoint_id}/snapshot", get(get_snapshot))
+    .route("/{viewpoint_id}/coloring", get(get_coloring))
+    .route("/{viewpoint_id}/selection", get(get_selection))
+    .route("/{viewpoint_id}/visibility", get(get_visibility))
 }
 
 /// GET /viewpoints — List all viewpoints for a topic.
@@ -188,4 +191,61 @@ async fn get_snapshot(
     [(header::CONTENT_TYPE, "image/png")],
     data,
   ))
+}
+
+/// GET /viewpoints/{viewpoint_id}/coloring — Get coloring components.
+async fn get_coloring(
+  State(state): State<AppState>,
+  Path((_project_id, _topic_id, viewpoint_id)): Path<(Uuid, Uuid, Uuid)>,
+) -> AppResult<Json<serde_json::Value>> {
+  let row = db::viewpoints::get_viewpoint(&state.pool, viewpoint_id)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("viewpoint {viewpoint_id}")))?;
+
+  let coloring = row
+    .components
+    .as_ref()
+    .and_then(|c| c.get("coloring"))
+    .cloned()
+    .unwrap_or(serde_json::Value::Array(vec![]));
+
+  Ok(Json(coloring))
+}
+
+/// GET /viewpoints/{viewpoint_id}/selection — Get selection components.
+async fn get_selection(
+  State(state): State<AppState>,
+  Path((_project_id, _topic_id, viewpoint_id)): Path<(Uuid, Uuid, Uuid)>,
+) -> AppResult<Json<serde_json::Value>> {
+  let row = db::viewpoints::get_viewpoint(&state.pool, viewpoint_id)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("viewpoint {viewpoint_id}")))?;
+
+  let selection = row
+    .components
+    .as_ref()
+    .and_then(|c| c.get("selection"))
+    .cloned()
+    .unwrap_or(serde_json::Value::Array(vec![]));
+
+  Ok(Json(selection))
+}
+
+/// GET /viewpoints/{viewpoint_id}/visibility — Get visibility components.
+async fn get_visibility(
+  State(state): State<AppState>,
+  Path((_project_id, _topic_id, viewpoint_id)): Path<(Uuid, Uuid, Uuid)>,
+) -> AppResult<Json<serde_json::Value>> {
+  let row = db::viewpoints::get_viewpoint(&state.pool, viewpoint_id)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("viewpoint {viewpoint_id}")))?;
+
+  let visibility = row
+    .components
+    .as_ref()
+    .and_then(|c| c.get("visibility"))
+    .cloned()
+    .unwrap_or(serde_json::json!({"default_visibility": true, "exceptions": []}));
+
+  Ok(Json(visibility))
 }

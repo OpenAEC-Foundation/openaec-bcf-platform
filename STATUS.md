@@ -1,6 +1,6 @@
 # STATUS -- OpenAEC BCF Platform
 
-> Laatste update: 2026-03-30
+> Laatste update: 2026-04-07
 
 ## Overzicht Fases
 
@@ -49,6 +49,7 @@
 
 ### Backend (bcf-server)
 - Volledige REST API (BCF v2.1 + platform endpoints)
+- BCF v2.1 compliance: 29/29 endpoints (versions, auth, extensions, viewpoint components, events)
 - OIDC auth + session JWT (24h) + API keys (bcfk_xxx)
 - Lazy JWKS fetch, static file serving met SPA fallback
 - Structured logging, CORS, error handling
@@ -67,8 +68,8 @@
 ## Wat ontbreekt
 
 - Role-based access control (schema aanwezig, enforcement niet)
-- Event/audit log endpoints
-- Project extensions endpoints
+- ~~Event/audit log endpoints~~ (Done)
+- ~~Project extensions endpoints~~ (Done)
 - Input validatie (BCF-specifiek)
 - Tests (minimale coverage)
 - Koppeling met OpenAEC Validator

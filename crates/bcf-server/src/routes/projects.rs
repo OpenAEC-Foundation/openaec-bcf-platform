@@ -20,13 +20,15 @@ use crate::models::project::{
 };
 use crate::state::AppState;
 
-use super::topics;
+use super::{events, extensions, topics};
 
 /// BCF v2.1 project routes (nested under /bcf/2.1/projects).
 pub fn bcf_project_routes() -> Router<AppState> {
   Router::new()
     .route("/", get(list_projects).post(create_project))
     .route("/{project_id}", get(get_project).put(update_project))
+    .nest("/{project_id}/extensions", extensions::routes())
+    .nest("/{project_id}/events", events::project_event_routes())
     .nest("/{project_id}/topics", topics::routes())
 }
 

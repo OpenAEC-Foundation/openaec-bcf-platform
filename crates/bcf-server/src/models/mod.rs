@@ -2,6 +2,8 @@
 
 pub mod api_key;
 pub mod comment;
+pub mod event;
+pub mod extension;
 pub mod member;
 pub mod project;
 pub mod topic;

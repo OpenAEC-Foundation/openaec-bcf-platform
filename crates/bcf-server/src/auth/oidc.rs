@@ -127,6 +127,16 @@ impl OidcClient {
     Ok(jwks)
   }
 
+  /// Get the authorization endpoint URL.
+  pub fn authorization_endpoint(&self) -> &str {
+    &self.discovery.authorization_endpoint
+  }
+
+  /// Get the token endpoint URL.
+  pub fn token_endpoint(&self) -> &str {
+    &self.discovery.token_endpoint
+  }
+
   /// Generate the authorization URL with PKCE.
   pub fn authorize_url(&self) -> (String, String, String, String) {
     let state = generate_random_string(32);
