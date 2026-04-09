@@ -28,6 +28,11 @@ async fn list_topic_events(
   State(state): State<AppState>,
   Path((_project_id, topic_id)): Path<(Uuid, Uuid)>,
 ) -> AppResult<Json<Vec<EventResponse>>> {
+  // Verify topic exists
+  db::topics::get_topic_by_id(&state.pool, topic_id)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("topic {topic_id}")))?;
+
   let rows = db::events::list_topic_events(&state.pool, topic_id).await?;
   let events: Vec<EventResponse> = rows.into_iter().map(Into::into).collect();
   Ok(Json(events))

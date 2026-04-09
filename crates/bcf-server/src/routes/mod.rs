@@ -83,20 +83,17 @@ struct BcfAuthResponse {
 }
 
 /// GET /bcf/2.1/auth — OAuth2 endpoint discovery for BCF clients.
-async fn bcf_auth(State(state): State<AppState>) -> Json<BcfAuthResponse> {
-  let (auth_url, token_url) = if let Some(ref oidc) = state.oidc_client {
-    (
-      oidc.authorization_endpoint().to_string(),
-      oidc.token_endpoint().to_string(),
-    )
-  } else {
-    // Fallback when OIDC is disabled (dev mode)
-    (String::new(), String::new())
-  };
+async fn bcf_auth(
+  State(state): State<AppState>,
+) -> Result<Json<BcfAuthResponse>, crate::error::AppError> {
+  let oidc = state
+    .oidc_client
+    .as_ref()
+    .ok_or_else(|| crate::error::AppError::NotFound("auth not configured".to_string()))?;
 
-  Json(BcfAuthResponse {
-    oauth2_auth_url: auth_url,
-    oauth2_token_url: token_url,
+  Ok(Json(BcfAuthResponse {
+    oauth2_auth_url: oidc.authorization_endpoint().to_string(),
+    oauth2_token_url: oidc.token_endpoint().to_string(),
     supported_oauth2_flows: vec!["authorization_code_grant"],
-  })
+  }))
 }
