@@ -64,19 +64,6 @@ export default function AppShell({ children }: AppShellProps) {
     }
   }, [params.projectId]);
 
-  const handleImportFromCloud = useCallback(
-    async (file: File) => {
-      if (!params.projectId) return;
-      try {
-        await bcf.importZip(params.projectId, file);
-        window.location.reload();
-      } catch {
-        // Error is logged by API client
-      }
-    },
-    [params.projectId],
-  );
-
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -125,11 +112,13 @@ export default function AppShell({ children }: AppShellProps) {
       <Backstage
         open={backstageOpen}
         onClose={() => setBackstageOpen(false)}
-        onImportBcf={handleImportBcf}
-        onExportBcf={handleExportBcf}
-        onImportFromCloud={handleImportFromCloud}
-        projectId={params.projectId}
-        projectName={currentProject?.name}
+        onNavigate={navigate}
+        currentProject={currentProject}
+        activeProjectId={params.projectId}
+        onNewProject={handleNewProject}
+        onSetProject={setCurrentProject}
+        onSetActiveProjectId={(id) => navigate(`/projects/${id}`)}
+        onReset={() => setCurrentProject(undefined)}
       />
       {/* Hidden file input for BCF import */}
       <input

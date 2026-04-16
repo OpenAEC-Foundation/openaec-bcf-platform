@@ -12,6 +12,8 @@
   "dependencies": {
     "@openaec/ui": "github:OpenAEC-Foundation/openaec-ui",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/jszip": "^3.4.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^1.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

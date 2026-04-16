@@ -1,0 +1,29 @@
+{
+  "file": "Bestand",
+  "new": "Nieuw",
+  "open": "Openen",
+  "save": "Opslaan",
+  "saveAs": "Opslaan als...",
+  "close": "Sluiten",
+  "preferences": "Voorkeuren",
+  "about": "Over",
+  "exit": "Afsluiten",
+  "fromServer": "Van server",
+  "localFile": "Lokaal bestand (.wefc)",
+  "toServer": "Naar server",
+  "localExport": "Lokaal export",
+  "projectNamePrompt": "Voer een projectnaam in:",
+  "savedToServer": "Project opgeslagen op server",
+  "savedLocally": "Project lokaal opgeslagen",
+  "opened": "Project geopend",
+  "newProject": "Nieuw project aangemaakt",
+  "closed": "Project gesloten",
+  "importError": "Fout bij importeren",
+  "saveError": "Fout bij opslaan",
+  "aboutPanel": {
+    "title": "Over",
+    "version": "Versie",
+    "website": "Website",
+    "github": "GitHub"
+  }
+}

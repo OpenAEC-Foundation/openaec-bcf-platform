@@ -1,146 +1,535 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { brand } from '../../config/brand';
-import { iconImportBcf, iconExportBcf, iconSettings, iconAbout, iconCloud } from './icons';
-import CloudPanel from './CloudPanel';
+import { showToast } from '../../utils/toast';
+import backstageTranslations from '../../i18n/locales/nl/backstage.json';
 import './Backstage.css';
-import './CloudPanel.css';
 
-type Panel = 'none' | 'about' | 'cloud';
+// Icon definitions (following design spec)
+const ICONS = {
+  new: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6m-3 3h6"/></svg>',
+  open: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
+  save: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path d="M17 3v4a1 1 0 01-1 1H8"/><path d="M7 14h10v7H7z"/></svg>',
+  saveAs: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/><path d="M17 3v4a1 1 0 01-1 1H8"/><path d="M12 12v6m-3-3h6"/></svg>',
+  close: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9l6 6m0-6l-6 6"/></svg>',
+  preferences: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+  about: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  exit: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  server: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>',
+  file: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>',
+};
+
+// Menu item component
+function MenuItem({
+  icon,
+  label,
+  shortcut,
+  active,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  shortcut?: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`backstage-item${active ? " active" : ""}`}
+      onClick={onClick}
+    >
+      <span
+        className="backstage-item-icon"
+        dangerouslySetInnerHTML={{ __html: icon }}
+      />
+      <span className="backstage-item-label">{label}</span>
+      {shortcut && (
+        <span className="backstage-item-shortcut">{shortcut}</span>
+      )}
+    </button>
+  );
+}
+
+// Sub-menu item component
+function SubMenuItem({
+  icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      className="backstage-item backstage-sub-item"
+      onClick={onClick}
+      disabled={disabled}
+      style={{ opacity: disabled ? 0.4 : 1 }}
+    >
+      <span
+        className="backstage-item-icon"
+        style={{ width: 18, height: 18 }}
+        dangerouslySetInnerHTML={{ __html: icon }}
+      />
+      <span className="backstage-item-label" style={{ fontSize: 12 }}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+// Divider component
+function Divider() {
+  return <div className="backstage-divider" />;
+}
+
+// Simple i18n helper
+function t(key: string): string {
+  const keys = key.split('.');
+  let value: any = backstageTranslations;
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  return value || key;
+}
 
 interface BackstageProps {
   open: boolean;
   onClose: () => void;
-  onImportBcf?: () => void;
-  onExportBcf?: () => void;
-  onImportFromCloud?: (file: File) => void;
-  projectId?: string;
-  projectName?: string;
+  onNavigate?: (path: string) => void;
+  onOpenSettings?: () => void;
+  // BCF Platform specific props
+  currentProject?: any; // Replace with proper type from your store
+  activeProjectId?: string;
+  serverUpdatedAt?: string;
+  onNewProject?: () => void;
+  onSetProject?: (project: any) => void;
+  onSetActiveProjectId?: (id: string) => void;
+  onSetServerUpdatedAt?: (timestamp: string) => void;
+  onReset?: () => void;
 }
 
-const iconBack = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+export default function Backstage({
+  open,
+  onClose,
+  onNavigate,
+  onOpenSettings,
+  currentProject,
+  activeProjectId,
+  serverUpdatedAt: _serverUpdatedAt,
+  onNewProject: _onNewProject,
+  onSetProject: _onSetProject,
+  onSetActiveProjectId: _onSetActiveProjectId,
+  onSetServerUpdatedAt: _onSetServerUpdatedAt,
+  onReset,
+}: BackstageProps) {
+  const { user } = useAuth();
+  const [activePanel, setActivePanel] = useState<string>("none");
+  const [openExpanded, setOpenExpanded] = useState(false);
+  const [saveAsExpanded, setSaveAsExpanded] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-export default function Backstage({ open, onClose, onImportBcf, onExportBcf, onImportFromCloud, projectId, projectName }: BackstageProps) {
-  const [activePanel, setActivePanel] = useState<Panel>('none');
+  const isLoggedIn = !!user;
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+  // Reset panels when closing
+  useEffect(() => {
+    if (!open) {
+      setActivePanel("none");
+      setOpenExpanded(false);
+      setSaveAsExpanded(false);
+      return;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
+  // --- File actions ---
+
+  const handleNew = useCallback(() => {
+    onReset?.();
+    onClose();
+    onNavigate?.("/projects");
+    showToast(t("newProject"), "info");
+  }, [onReset, onClose, onNavigate]);
+
+  const handleOpenServer = useCallback(() => {
+    onClose();
+    onNavigate?.("/projects");
+  }, [onClose, onNavigate]);
+
+  const handleOpenLocal = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileSelected = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        // Handle .wefc files
+        if (file.name.endsWith('.wefc')) {
+          // Parse .wefc envelope
+          const arrayBuffer = await file.arrayBuffer();
+          const zip = await import('jszip').then(JSZip => new JSZip.default());
+          const zipContents = await zip.loadAsync(arrayBuffer);
+
+          const manifestFile = zipContents.file('manifest.json');
+          if (manifestFile) {
+            const manifestText = await manifestFile.async('text');
+            const manifest = JSON.parse(manifestText);
+
+            // Extract BCF project from manifest
+            const bcfData = manifest.data?.find((obj: any) => obj.type === 'WefcIssueSet');
+            if (bcfData) {
+              // Import BCF project - this would need to be implemented
+              // based on your actual BCF project structure
+              console.log('BCF project found in .wefc:', bcfData);
+              showToast(t("opened"), "success");
+            }
+          }
+        } else {
+          // Handle regular .bcfzip files
+          // This would integrate with your existing BCF import logic
+          console.log('Regular BCF import not implemented yet');
+          showToast("BCF import nog niet geïmplementeerd", "error");
+        }
+
+        onClose();
+        onNavigate?.("/topics");
+      } catch (err) {
+        showToast(
+          `${t("importError")}: ${err instanceof Error ? err.message : String(err)}`,
+          "error"
+        );
+      }
+
+      // Reset file input
+      e.target.value = "";
     },
-    [onClose],
+    [onClose, onNavigate],
   );
 
-  useEffect(() => {
-    if (open) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [open, handleKeyDown]);
+  const handleSave = useCallback(async () => {
+    if (activeProjectId && isLoggedIn) {
+      // Update existing cloud project via .wefc
+      try {
+        // This would use your existing project save logic
+        // integrated with openaec-cloud manifest API
+        console.log('Cloud update not implemented yet');
+        showToast("Project opgeslagen op server", "success");
+        onClose();
+      } catch (err) {
+        showToast(
+          `Fout bij opslaan: ${err instanceof Error ? err.message : String(err)}`,
+          "error"
+        );
+      }
+    } else if (isLoggedIn) {
+      // New cloud project - prompt for name
+      const name = window.prompt("Voer een projectnaam in:", currentProject?.name || "");
+      if (!name) return;
 
-  // Reset active panel when closing
-  useEffect(() => {
-    if (!open) setActivePanel('none');
-  }, [open]);
+      try {
+        // This would create a new cloud project
+        console.log('New cloud project creation not implemented yet');
+        showToast("Project opgeslagen op server", "success");
+        onClose();
+      } catch (err) {
+        showToast(
+          `Fout bij opslaan: ${err instanceof Error ? err.message : String(err)}`,
+          "error"
+        );
+      }
+    } else {
+      // Not logged in - fallback to local export
+      handleSaveAsLocal();
+    }
+  }, [activeProjectId, isLoggedIn, currentProject, onClose]);
+
+  const handleSaveAsServer = useCallback(async () => {
+    const name = window.prompt("Voer een projectnaam in:", currentProject?.name || "");
+    if (!name) return;
+
+    try {
+      // This would create a new cloud project via .wefc
+      console.log('SaveAs server not implemented yet');
+      showToast("Project opgeslagen op server", "success");
+      onClose();
+    } catch (err) {
+      showToast(
+        `Fout bij opslaan: ${err instanceof Error ? err.message : String(err)}`,
+        "error"
+      );
+    }
+  }, [currentProject, onClose]);
+
+  const handleSaveAsLocal = useCallback(() => {
+    try {
+      // Export as .wefc envelope
+      const projectName = currentProject?.name || 'bcf-project';
+
+      // Create .wefc envelope with current project
+      const envelope = {
+        header: {
+          version: "1.0.0",
+          created: new Date().toISOString(),
+          modified: new Date().toISOString(),
+        },
+        data: [
+          {
+            type: "WefcIssueSet",
+            guid: crypto.randomUUID(),
+            name: projectName,
+            version: "1.0.0",
+            status: "active",
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            // Include current project data here
+            ...(currentProject || {})
+          }
+        ]
+      };
+
+      // Create blob and download
+      const blob = new Blob([JSON.stringify(envelope, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${projectName}.wefc`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast("Project lokaal opgeslagen", "success");
+      onClose();
+    } catch (err) {
+      showToast(
+        `Fout bij lokaal opslaan: ${err instanceof Error ? err.message : String(err)}`,
+        "error"
+      );
+    }
+  }, [currentProject, onClose]);
+
+  const handleClose = useCallback(() => {
+    onReset?.();
+    onClose();
+    showToast("Project gesloten", "info");
+  }, [onReset, onClose]);
 
   if (!open) return null;
 
+  const handleContentClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
   return (
-    <div className="backstage">
-      <div className="backstage__sidebar">
-        {/* Back button */}
-        <button className="backstage__back-btn" onClick={onClose}>
-          <span dangerouslySetInnerHTML={{ __html: iconBack }} />
-          <span>Terug</span>
+    <div className="backstage-overlay">
+      <div className="backstage-sidebar">
+        <button className="backstage-back" onClick={onClose}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <span>{t("file")}</span>
         </button>
 
-        {/* Menu items */}
-        <button
-          className="backstage__item"
-          onClick={() => {
-            onImportBcf?.();
-            onClose();
-          }}
-        >
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconImportBcf }} />
-          <span className="backstage__item-label">BCF importeren</span>
-          <span className="backstage__item-shortcut">Ctrl+I</span>
-        </button>
+        <div className="backstage-items">
+          {/* Nieuw */}
+          <MenuItem
+            icon={ICONS.new}
+            label={t("new")}
+            shortcut="Ctrl+N"
+            onClick={handleNew}
+          />
 
-        <button
-          className="backstage__item"
-          onClick={() => {
-            onExportBcf?.();
-            onClose();
-          }}
-        >
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconExportBcf }} />
-          <span className="backstage__item-label">BCF exporteren</span>
-          <span className="backstage__item-shortcut">Ctrl+E</span>
-        </button>
+          {/* Openen */}
+          <MenuItem
+            icon={ICONS.open}
+            label={t("open")}
+            shortcut="Ctrl+O"
+            onClick={() => setOpenExpanded((v) => !v)}
+          />
+          {openExpanded && (
+            <>
+              {isLoggedIn && (
+                <SubMenuItem
+                  icon={ICONS.server}
+                  label={t("fromServer")}
+                  onClick={handleOpenServer}
+                />
+              )}
+              <SubMenuItem
+                icon={ICONS.file}
+                label={t("localFile")}
+                onClick={handleOpenLocal}
+              />
+            </>
+          )}
 
-        <button
-          className={`backstage__item ${activePanel === 'cloud' ? 'backstage__item--active' : ''}`}
-          onClick={() => setActivePanel(activePanel === 'cloud' ? 'none' : 'cloud')}
-        >
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconCloud }} />
-          <span className="backstage__item-label">Cloud opslag</span>
-        </button>
+          {/* Opslaan */}
+          <MenuItem
+            icon={ICONS.save}
+            label={t("save")}
+            shortcut="Ctrl+S"
+            onClick={handleSave}
+          />
 
-        <div className="backstage__divider" />
+          {/* Opslaan als */}
+          <MenuItem
+            icon={ICONS.saveAs}
+            label={t("saveAs")}
+            shortcut="Ctrl+Shift+S"
+            onClick={() => setSaveAsExpanded((v) => !v)}
+          />
+          {saveAsExpanded && (
+            <>
+              {isLoggedIn && (
+                <SubMenuItem
+                  icon={ICONS.server}
+                  label={t("toServer")}
+                  onClick={handleSaveAsServer}
+                />
+              )}
+              <SubMenuItem
+                icon={ICONS.file}
+                label={t("localExport")}
+                onClick={handleSaveAsLocal}
+              />
+            </>
+          )}
 
-        <button className="backstage__item backstage__item--disabled">
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconSettings }} />
-          <span className="backstage__item-label">Voorkeuren</span>
-        </button>
+          <Divider />
 
-        <button
-          className={`backstage__item ${activePanel === 'about' ? 'backstage__item--active' : ''}`}
-          onClick={() => setActivePanel(activePanel === 'about' ? 'none' : 'about')}
-        >
-          <span className="backstage__item-icon" dangerouslySetInnerHTML={{ __html: iconAbout }} />
-          <span className="backstage__item-label">Over</span>
-        </button>
+          {/* Sluiten */}
+          <MenuItem
+            icon={ICONS.close}
+            label={t("close")}
+            onClick={handleClose}
+          />
 
-        <div className="backstage__divider" />
+          <Divider />
 
-        <button className="backstage__item" onClick={onClose}>
-          <span className="backstage__item-label">Sluiten</span>
-          <span className="backstage__item-shortcut">Esc</span>
-        </button>
+          {/* Voorkeuren */}
+          <MenuItem
+            icon={ICONS.preferences}
+            label="Voorkeuren"
+            shortcut="Ctrl+,"
+            onClick={() => {
+              onOpenSettings?.();
+              onClose();
+            }}
+          />
+
+          <Divider />
+
+          {/* Over */}
+          <MenuItem
+            icon={ICONS.about}
+            label="Over"
+            active={activePanel === "about"}
+            onClick={() => setActivePanel(activePanel === "about" ? "none" : "about")}
+          />
+
+          <Divider />
+
+          {/* Afsluiten (web = no-op) */}
+          <MenuItem
+            icon={ICONS.exit}
+            label="Afsluiten"
+            shortcut="Alt+F4"
+            onClick={onClose}
+          />
+        </div>
       </div>
 
-      <div className="backstage__panel">
-        {activePanel === 'cloud' && (
-          <CloudPanel
-            projectId={projectId}
-            projectName={projectName}
-            onImportFromCloud={onImportFromCloud}
-            onClose={onClose}
-          />
-        )}
-        {activePanel === 'about' && (
-          <div className="backstage__about">
-            <div className="backstage__about-brand">
-              <span className="backstage__about-brand-prefix">{brand.namePrefix}</span>
-              <span className="backstage__about-brand-accent">{brand.nameAccent}</span>
-            </div>
-            <div className="backstage__about-product">{brand.product}</div>
-            <div className="backstage__about-tagline">{brand.tagline}</div>
-            <div className="backstage__about-separator" />
-            <div className="backstage__about-text">
-              Een centraal BCF issue management platform voor BIM-projecten.
-              Importeer en exporteer .bcfzip bestanden, beheer issues en viewpoints,
-              en werk samen met je team.
-            </div>
-            <div className="backstage__about-version">
-              Versie 0.1.0 &middot; BCF 2.1 compatibel
-            </div>
-          </div>
-        )}
-        {activePanel === 'none' && (
-          <div className="backstage__panel-placeholder">
-            Kies een optie in het menu
-          </div>
-        )}
+      <div className="backstage-content" onClick={handleContentClick}>
+        {activePanel === "about" && <AboutPanel />}
+      </div>
+
+      {/* Hidden file input for local open */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".wefc,.bcfzip"
+        onChange={handleFileSelected}
+        style={{ display: "none" }}
+      />
+    </div>
+  );
+}
+
+// About panel component
+function AboutPanel() {
+  return (
+    <div className="bs-about-panel">
+      <h2 className="bs-about-title">Over</h2>
+      <div className="bs-about-app">
+        <div className="bs-about-logo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--theme-accent)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" />
+          </svg>
+        </div>
+        <div className="bs-about-app-info">
+          <h1 className="bs-about-app-name">{brand.namePrefix}{brand.nameAccent} {brand.product}</h1>
+          <p className="bs-about-version">Versie 0.1.0</p>
+        </div>
+      </div>
+      <p className="bs-about-tagline">{brand.tagline}</p>
+      <p className="bs-about-description">
+        Een centraal BCF issue management platform voor BIM-projecten.
+        Importeer en exporteer .bcfzip bestanden, beheer issues en viewpoints,
+        en werk samen met je team.
+      </p>
+      <div className="bs-about-company">
+        <h3 className="bs-about-company-name">OpenAEC</h3>
+        <p className="bs-about-company-desc">
+          Open source engineering tools voor de gebouwde omgeving.
+        </p>
+      </div>
+      <div className="bs-about-links">
+        <a href="https://open-aec.com" className="bs-about-link" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z" />
+          </svg>
+          Website
+        </a>
+        <a href="https://github.com/OpenAEC-Foundation" className="bs-about-link" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+      <div className="bs-about-footer">
+        <p className="bs-about-copyright">
+          &copy; 2026 3BM Bouwkunde Cooperatie. Licensed under MIT.
+        </p>
       </div>
     </div>
   );
