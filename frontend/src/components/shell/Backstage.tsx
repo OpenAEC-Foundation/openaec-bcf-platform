@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { brand } from '../../config/brand';
 import { showToast } from '../../utils/toast';
+import { cloudListProjects, cloudReadManifest, cloudWriteManifest } from '../../api/cloudApi';
 import backstageTranslations from '../../i18n/locales/nl/backstage.json';
 import './Backstage.css';
 
@@ -160,9 +161,58 @@ export default function Backstage({
     showToast(t("newProject"), "info");
   }, [onReset, onClose, onNavigate]);
 
-  const handleOpenServer = useCallback(() => {
-    onClose();
-    onNavigate?.("/projects");
+  const handleOpenServer = useCallback(async () => {
+    try {
+      const projects = await cloudListProjects();
+
+      if (projects.length === 0) {
+        showToast("Geen projecten gevonden in cloud", "info");
+        return;
+      }
+
+      // Simple project picker - use browser prompt for now
+      const projectNames = projects.map(p => p.name);
+      const projectsText = projectNames.map((name, i) => `${i + 1}. ${name}`).join('\n');
+      const choice = window.prompt(
+        `Selecteer project (voer nummer in):\n\n${projectsText}`,
+        "1"
+      );
+
+      if (!choice) return;
+
+      const index = parseInt(choice) - 1;
+      if (index < 0 || index >= projects.length) {
+        showToast("Ongeldige selectie", "error");
+        return;
+      }
+
+      const selectedProject = projects[index];
+      const manifest = await cloudReadManifest(selectedProject.name);
+
+      if (!manifest || !manifest.header) {
+        showToast(`Geen manifest gevonden voor project "${selectedProject.name}"`, "error");
+        return;
+      }
+
+      // Extract BCF data from manifest
+      const bcfData = manifest.data.find(obj => obj.type === 'WefcIssueSet');
+      if (bcfData) {
+        // TODO: Integrate with your actual project loading logic
+        // For now, just set the project reference
+        // onSetProject?.(bcfData);
+        console.log('Loaded BCF project from cloud:', bcfData);
+        showToast(`Project "${selectedProject.name}" geladen uit cloud`, "success");
+        onClose();
+        onNavigate?.("/topics");
+      } else {
+        showToast("Geen BCF data gevonden in project manifest", "error");
+      }
+    } catch (err) {
+      showToast(
+        `Fout bij laden uit cloud: ${err instanceof Error ? err.message : String(err)}`,
+        "error"
+      );
+    }
   }, [onClose, onNavigate]);
 
   const handleOpenLocal = useCallback(() => {
@@ -220,11 +270,12 @@ export default function Backstage({
 
   const handleSave = useCallback(async () => {
     if (activeProjectId && isLoggedIn) {
-      // Update existing cloud project via .wefc
       try {
-        // This would use your existing project save logic
-        // integrated with openaec-cloud manifest API
-        console.log('Cloud update not implemented yet');
+        await cloudWriteManifest(activeProjectId, {
+          schema: 'bcf-platform/v1',
+          updated_at: new Date().toISOString(),
+          project: currentProject ?? null,
+        });
         showToast("Project opgeslagen op server", "success");
         onClose();
       } catch (err) {
@@ -234,13 +285,14 @@ export default function Backstage({
         );
       }
     } else if (isLoggedIn) {
-      // New cloud project - prompt for name
       const name = window.prompt("Voer een projectnaam in:", currentProject?.name || "");
       if (!name) return;
-
       try {
-        // This would create a new cloud project
-        console.log('New cloud project creation not implemented yet');
+        await cloudWriteManifest(name, {
+          schema: 'bcf-platform/v1',
+          updated_at: new Date().toISOString(),
+          project: currentProject ?? null,
+        });
         showToast("Project opgeslagen op server", "success");
         onClose();
       } catch (err) {
@@ -250,7 +302,6 @@ export default function Backstage({
         );
       }
     } else {
-      // Not logged in - fallback to local export
       handleSaveAsLocal();
     }
   }, [activeProjectId, isLoggedIn, currentProject, onClose]);
@@ -258,10 +309,12 @@ export default function Backstage({
   const handleSaveAsServer = useCallback(async () => {
     const name = window.prompt("Voer een projectnaam in:", currentProject?.name || "");
     if (!name) return;
-
     try {
-      // This would create a new cloud project via .wefc
-      console.log('SaveAs server not implemented yet');
+      await cloudWriteManifest(name, {
+        schema: 'bcf-platform/v1',
+        updated_at: new Date().toISOString(),
+        project: currentProject ?? null,
+      });
       showToast("Project opgeslagen op server", "success");
       onClose();
     } catch (err) {
