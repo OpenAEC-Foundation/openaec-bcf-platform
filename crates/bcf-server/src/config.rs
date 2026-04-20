@@ -21,6 +21,11 @@ pub struct Config {
     pub jwt_secret: String,
     /// Frontend URL to redirect to after OIDC callback.
     pub frontend_url: String,
+    /// Auto-provision unknown users authenticated via Authentik forward_auth
+    /// headers (`X-Authentik-Email`, …). When false, only pre-existing users
+    /// can authenticate via forward_auth and unknown emails fall through to
+    /// the Bearer-token flow.
+    pub authentik_auto_provision: bool,
     /// Whether cloud storage (multi-tenant Nextcloud) is available.
     ///
     /// True when `TENANTS_CONFIG` points to a valid file OR when the legacy
@@ -48,6 +53,7 @@ impl Config {
     ///           `AUTH_ENABLED` (default false),
     ///           `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`,
     ///           `OIDC_REDIRECT_URI`, `JWT_SECRET`, `FRONTEND_URL`,
+    ///           `AUTHENTIK_AUTO_PROVISION` (default true),
     ///           `TENANTS_CONFIG`, `DEFAULT_TENANT`,
     ///           `NEXTCLOUD_URL`, `NEXTCLOUD_SERVICE_USER`, `NEXTCLOUD_SERVICE_PASS`
     pub fn from_env() -> Result<Self, ConfigError> {
@@ -79,6 +85,11 @@ impl Config {
 
         let frontend_url = std::env::var("FRONTEND_URL")
             .unwrap_or_else(|_| "http://localhost:5173".to_string());
+
+        let authentik_auto_provision = std::env::var("AUTHENTIK_AUTO_PROVISION")
+            .ok()
+            .and_then(|v| v.parse::<bool>().ok())
+            .unwrap_or(true);
 
         // Cloud storage: try multi-tenant first, then legacy single-tenant
         let tenants_config = std::env::var("TENANTS_CONFIG").ok();
@@ -129,6 +140,7 @@ impl Config {
             oidc_redirect_uri,
             jwt_secret,
             frontend_url,
+            authentik_auto_provision,
             cloud_enabled,
             default_tenant,
             nextcloud_url,

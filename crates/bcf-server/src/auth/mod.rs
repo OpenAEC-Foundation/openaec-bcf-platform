@@ -1,12 +1,16 @@
 //! Authentication and authorization.
 //!
-//! Supports two authentication methods:
-//! 1. **Session JWT** — issued after OIDC login, sent as `Authorization: Bearer <jwt>`
-//! 2. **API key** — for service-to-service auth, sent as `Authorization: Bearer bcfk_xxx`
+//! Supports three authentication methods, tried in order:
+//! 1. **Authentik forward_auth headers** — injected by Caddy's forward_auth
+//!    directive after the Authentik outpost validates the browser session
+//!    (`X-Authentik-Email`, `X-Authentik-Username`, …).
+//! 2. **Session JWT** — issued after OIDC login, sent as `Authorization: Bearer <jwt>`
+//! 3. **API key** — for service-to-service auth, sent as `Authorization: Bearer bcfk_xxx`
 //!
 //! When `AUTH_ENABLED=false`, all routes are accessible without authentication.
 
 pub mod api_key;
+pub mod forward_auth;
 pub mod jwt;
 pub mod oidc;
 
@@ -46,6 +50,12 @@ impl FromRequestParts<AppState> for AuthUser {
         email: "anonymous@local".to_string(),
         name: "Anonymous".to_string(),
       });
+    }
+
+    // 1. Authentik forward_auth headers (Caddy → Authentik outpost flow).
+    //    When absent, fall through to Bearer-token methods.
+    if let Some(user) = forward_auth::extract_authentik_user(parts, state).await {
+      return Ok(user);
     }
 
     let auth_header = parts
