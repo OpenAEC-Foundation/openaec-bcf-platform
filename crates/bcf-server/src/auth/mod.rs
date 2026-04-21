@@ -1,15 +1,22 @@
 //! Authentication and authorization.
 //!
-//! Supports three authentication methods, tried in order:
+//! Supports four authentication methods, tried in order:
 //! 1. **Authentik forward_auth headers** — injected by Caddy's forward_auth
 //!    directive after the Authentik outpost validates the browser session
 //!    (`X-Authentik-Email`, `X-Authentik-Username`, …).
-//! 2. **Session JWT** — issued after OIDC login, sent as `Authorization: Bearer <jwt>`
-//! 3. **API key** — for service-to-service auth, sent as `Authorization: Bearer bcfk_xxx`
+//! 2. **Authentik service token** — `Authorization: Bearer ak-*` issued by
+//!    Authentik for machine clients (Revit plugin, CI workflows, MCP
+//!    servers). Validated against `/api/v3/core/users/me/` with a 5 min
+//!    cache — see [`authentik_token`].
+//! 3. **Session JWT** — issued after OIDC login, sent as `Authorization: Bearer <jwt>`
+//!    (JWTs are identified by the `eyJ` prefix).
+//! 4. **Legacy API key** — for service-to-service auth, sent as
+//!    `Authorization: Bearer bcfk_xxx`.
 //!
 //! When `AUTH_ENABLED=false`, all routes are accessible without authentication.
 
 pub mod api_key;
+pub mod authentik_token;
 pub mod forward_auth;
 pub mod jwt;
 pub mod oidc;
@@ -68,13 +75,24 @@ impl FromRequestParts<AppState> for AuthUser {
       .strip_prefix("Bearer ")
       .ok_or(AppError::Unauthorized)?;
 
-    // Try API key first (starts with bcfk_)
+    // Legacy API key (starts with bcfk_) — bcrypt verify path.
     if token.starts_with("bcfk_") {
       return validate_api_key_token(token, state).await;
     }
 
-    // Otherwise try session JWT
-    validate_jwt_token(token, state).await
+    // Local session JWT (starts with the base64 JSON header `eyJ`).
+    if token.starts_with("eyJ") {
+      return validate_jwt_token(token, state).await;
+    }
+
+    // Authentik-issued service token (`ak-*` or any other non-JWT / non-bcfk
+    // Bearer). Validated live against `/api/v3/core/users/me/` with a 5 min
+    // cache; auto-provisions a local `users` row on first sight.
+    if let Some(user) = authentik_token::validate_authentik_token(token, state).await {
+      return Ok(user);
+    }
+
+    Err(AppError::Unauthorized)
   }
 }
 

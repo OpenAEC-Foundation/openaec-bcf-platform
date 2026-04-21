@@ -26,6 +26,10 @@ pub struct Config {
     /// can authenticate via forward_auth and unknown emails fall through to
     /// the Bearer-token flow.
     pub authentik_auto_provision: bool,
+    /// Base URL of the Authentik instance used to validate `ak-*` Bearer
+    /// tokens via `/api/v3/core/users/me/`. Defaults to the 3BM platform
+    /// instance when the env var is unset.
+    pub authentik_api_url: Option<String>,
     /// Whether cloud storage (multi-tenant Nextcloud) is available.
     ///
     /// True when `TENANTS_CONFIG` points to a valid file OR when the legacy
@@ -54,6 +58,7 @@ impl Config {
     ///           `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`,
     ///           `OIDC_REDIRECT_URI`, `JWT_SECRET`, `FRONTEND_URL`,
     ///           `AUTHENTIK_AUTO_PROVISION` (default true),
+    ///           `AUTHENTIK_API_URL` (default https://auth.open-aec.com),
     ///           `TENANTS_CONFIG`, `DEFAULT_TENANT`,
     ///           `NEXTCLOUD_URL`, `NEXTCLOUD_SERVICE_USER`, `NEXTCLOUD_SERVICE_PASS`
     pub fn from_env() -> Result<Self, ConfigError> {
@@ -90,6 +95,11 @@ impl Config {
             .ok()
             .and_then(|v| v.parse::<bool>().ok())
             .unwrap_or(true);
+
+        let authentik_api_url = std::env::var("AUTHENTIK_API_URL")
+            .ok()
+            .map(|v| v.trim_end_matches('/').to_string())
+            .filter(|v| !v.is_empty());
 
         // Cloud storage: try multi-tenant first, then legacy single-tenant
         let tenants_config = std::env::var("TENANTS_CONFIG").ok();
@@ -141,6 +151,7 @@ impl Config {
             jwt_secret,
             frontend_url,
             authentik_auto_provision,
+            authentik_api_url,
             cloud_enabled,
             default_tenant,
             nextcloud_url,
