@@ -33,6 +33,7 @@ sqlx = { version = "0.8", features = [
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
+serde_yml = "0.0.12"
 uuid = { workspace = true }
 chrono = { workspace = true }
 
@@ -60,4 +61,5 @@ anyhow = "1"
 
 [dev-dependencies]
 reqwest = { version = "0.12", features = ["json"] }
+tempfile = "3"
 tokio = { version = "1", features = ["full", "test-util"] }

@@ -5,6 +5,7 @@
 
 mod auth;
 mod config;
+mod cors;
 mod db;
 mod error;
 mod models;
@@ -13,10 +14,11 @@ mod state;
 mod storage;
 mod webdav;
 
+use std::collections::HashSet;
 use std::net::SocketAddr;
+use std::path::PathBuf;
 
 use sqlx::postgres::PgPoolOptions;
-use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
@@ -81,10 +83,38 @@ async fn main() -> anyhow::Result<()> {
   // Build application (cloud client initialized here)
   let state = AppState::new(pool, config.clone(), oidc_client);
 
-  let cors = CorsLayer::new()
-    .allow_origin(Any)
-    .allow_methods(Any)
-    .allow_headers(Any);
+  // Tenant-aware CORS (B-4 uitrol). Leest `tenant.yaml` per tenant uit
+  // `OPENAEC_TENANTS_ROOT`; valt bij afwezigheid terug op `CORS_ORIGINS`
+  // env-var, en bij ook afwezig daarvan op permissive (zelfde gedrag als
+  // voor deze commit — Caddy blijft gate-keeper).
+  let tenants_root = std::env::var("OPENAEC_TENANTS_ROOT")
+    .ok()
+    .map(PathBuf::from);
+  let include_dev =
+    std::env::var("OPENAEC_ENV").unwrap_or_else(|_| "development".into()) != "production";
+  let origins = match tenants_root.as_deref() {
+    Some(root) if root.exists() => {
+      tracing::info!(
+        tenants_root = %root.display(),
+        include_dev = include_dev,
+        "CORS: tenants-root scan starten"
+      );
+      cors::load_tenant_origins(root, include_dev)
+    }
+    Some(root) => {
+      tracing::warn!(
+        tenants_root = %root.display(),
+        "CORS: OPENAEC_TENANTS_ROOT bestaat niet — val terug op env/permissive"
+      );
+      HashSet::new()
+    }
+    None => {
+      tracing::info!("CORS: OPENAEC_TENANTS_ROOT niet gezet — val terug op env/permissive");
+      HashSet::new()
+    }
+  };
+  let cors_fallback_env = std::env::var("CORS_ORIGINS").ok();
+  let cors = cors::build_cors_layer(origins, cors_fallback_env);
 
   // Serve frontend SPA if static dir exists
   let static_dir = std::path::Path::new("/app/static");
