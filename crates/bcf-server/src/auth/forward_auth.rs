@@ -113,7 +113,7 @@ pub async fn extract_authentik_user(parts: &Parts, state: &AppState) -> Option<A
   let display_name = header_value(parts, HDR_NAME);
   let uid = header_value(parts, HDR_UID);
   let _groups = header_value(parts, HDR_GROUPS);
-  let _meta = AuthentikMeta::from_parts(parts);
+  let meta = AuthentikMeta::from_parts(parts);
 
   // Derive a display name: X-Authentik-Name, else Username, else email local-part.
   let resolved_name = display_name
@@ -141,6 +141,18 @@ pub async fn extract_authentik_user(parts: &Parts, state: &AppState) -> Option<A
         tracing::debug!(
           email = %email,
           "forward_auth: user unknown and auto-provision disabled"
+        );
+        return None;
+      }
+      if !is_tenant_allowed(
+        &state.config.authentik_auto_provision_tenants,
+        meta.tenant.as_deref(),
+      ) {
+        tracing::debug!(
+          email = %email,
+          tenant = ?meta.tenant,
+          allowlist = ?state.config.authentik_auto_provision_tenants,
+          "forward_auth: tenant not on auto-provision allow-list"
         );
         return None;
       }
@@ -203,6 +215,26 @@ async fn provision_user(
   .bind(name)
   .fetch_one(pool)
   .await
+}
+
+/// Decide whether auto-provisioning is permitted for the given tenant.
+///
+/// Returns `true` when the allow-list is empty (backwards-compatible "no
+/// gating" behaviour), or when the request carries a non-empty tenant value
+/// that appears in the allow-list. Returns `false` when a non-empty
+/// allow-list is configured and the tenant is absent or not listed.
+///
+/// Comparison is case-sensitive and slug values are trimmed upstream in
+/// [`header_value`], so an `X-Authentik-Meta-Tenant: 3bm ` header matches
+/// an allow-list entry of `3bm`.
+fn is_tenant_allowed(allowlist: &[String], tenant: Option<&str>) -> bool {
+  if allowlist.is_empty() {
+    return true;
+  }
+  match tenant {
+    Some(t) if !t.is_empty() => allowlist.iter().any(|allowed| allowed == t),
+    _ => false,
+  }
 }
 
 /// Read a request header value as an owned trimmed [`String`].
@@ -298,5 +330,43 @@ mod tests {
     let mut map = HeaderMap::new();
     map.insert("X-Authentik-Email", HeaderValue::from_static("a@b.c"));
     assert_eq!(map.get("x-authentik-email").unwrap(), "a@b.c");
+  }
+
+  // --- Tenant-gate tests (B — AUTHENTIK_AUTO_PROVISION_TENANTS) ---
+
+  /// Empty allow-list = backwards-compatible behaviour: every tenant is
+  /// allowed, including requests without a tenant header. This is the
+  /// default when `AUTHENTIK_AUTO_PROVISION_TENANTS` is unset.
+  #[test]
+  fn tenant_gate_empty_allowlist_permits_all() {
+    let allowlist: Vec<String> = Vec::new();
+    assert!(is_tenant_allowed(&allowlist, Some("3bm")));
+    assert!(is_tenant_allowed(&allowlist, Some("anything-goes")));
+    assert!(is_tenant_allowed(&allowlist, None));
+    assert!(is_tenant_allowed(&allowlist, Some("")));
+  }
+
+  /// Non-empty allow-list with a matching tenant permits auto-provisioning.
+  #[test]
+  fn tenant_gate_listed_tenant_is_permitted() {
+    let allowlist = vec!["3bm".to_string(), "symitech".to_string()];
+    assert!(is_tenant_allowed(&allowlist, Some("3bm")));
+    assert!(is_tenant_allowed(&allowlist, Some("symitech")));
+  }
+
+  /// Non-empty allow-list with a non-matching or missing tenant blocks
+  /// auto-provisioning — the extractor will return `None` and the request
+  /// falls through to the Bearer-token flow.
+  #[test]
+  fn tenant_gate_unlisted_or_missing_tenant_is_blocked() {
+    let allowlist = vec!["3bm".to_string(), "symitech".to_string()];
+    // Unknown tenant slug.
+    assert!(!is_tenant_allowed(&allowlist, Some("impertio")));
+    // Missing tenant header altogether.
+    assert!(!is_tenant_allowed(&allowlist, None));
+    // Empty-string tenant is treated as "missing".
+    assert!(!is_tenant_allowed(&allowlist, Some("")));
+    // Case-sensitive comparison — slugs are canonical.
+    assert!(!is_tenant_allowed(&allowlist, Some("3BM")));
   }
 }

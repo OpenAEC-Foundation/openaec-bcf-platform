@@ -26,6 +26,17 @@ pub struct Config {
     /// can authenticate via forward_auth and unknown emails fall through to
     /// the Bearer-token flow.
     pub authentik_auto_provision: bool,
+    /// Optional allow-list of Authentik tenant slugs that are eligible for
+    /// auto-provisioning. Reads from the `X-Authentik-Meta-Tenant` header.
+    ///
+    /// Semantics (applies only when `authentik_auto_provision` is `true`):
+    /// - empty list (default): no gating — every authenticated user may be
+    ///   provisioned (backwards-compatible with pre-gate behaviour);
+    /// - non-empty list: only users whose `X-Authentik-Meta-Tenant` header
+    ///   value appears in the list are provisioned. Users without the
+    ///   header, or with a tenant outside the list, fall through to the
+    ///   Bearer-token flow (typically ending in HTTP 401).
+    pub authentik_auto_provision_tenants: Vec<String>,
     /// Base URL of the Authentik instance used to validate `ak-*` Bearer
     /// tokens via `/api/v3/core/users/me/`. Defaults to the 3BM platform
     /// instance when the env var is unset.
@@ -58,6 +69,8 @@ impl Config {
     ///           `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`,
     ///           `OIDC_REDIRECT_URI`, `JWT_SECRET`, `FRONTEND_URL`,
     ///           `AUTHENTIK_AUTO_PROVISION` (default true),
+    ///           `AUTHENTIK_AUTO_PROVISION_TENANTS` (comma-separated slug
+    ///             allow-list, default empty = no gating; e.g. `3bm,symitech`),
     ///           `AUTHENTIK_API_URL` (default https://auth.open-aec.com),
     ///           `TENANTS_CONFIG`, `DEFAULT_TENANT`,
     ///           `NEXTCLOUD_URL`, `NEXTCLOUD_SERVICE_USER`, `NEXTCLOUD_SERVICE_PASS`
@@ -95,6 +108,17 @@ impl Config {
             .ok()
             .and_then(|v| v.parse::<bool>().ok())
             .unwrap_or(true);
+
+        let authentik_auto_provision_tenants = std::env::var("AUTHENTIK_AUTO_PROVISION_TENANTS")
+            .ok()
+            .map(|raw| {
+                raw.split(',')
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .map(str::to_string)
+                    .collect::<Vec<String>>()
+            })
+            .unwrap_or_default();
 
         let authentik_api_url = std::env::var("AUTHENTIK_API_URL")
             .ok()
@@ -151,6 +175,7 @@ impl Config {
             jwt_secret,
             frontend_url,
             authentik_auto_provision,
+            authentik_auto_provision_tenants,
             authentik_api_url,
             cloud_enabled,
             default_tenant,
